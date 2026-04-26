@@ -4396,7 +4396,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2k2"
+		(property "Value" "3k3"
 			(at 48.26 49.5299 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5593,7 +5593,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "2k2"
+		(property "Value" "3k3"
 			(at 55.88 49.5299 0)
 			(show_name no)
 			(do_not_autoplace no)
