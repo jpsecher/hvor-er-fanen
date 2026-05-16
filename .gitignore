@@ -3,3 +3,4 @@
 *-cache
 *-backups/
 .history/
+*.FCBak
