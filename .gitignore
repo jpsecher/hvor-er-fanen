@@ -4,3 +4,6 @@
 *-backups/
 .history/
 *.FCBak
+*.3mf
+*.gbr
+*.drl
