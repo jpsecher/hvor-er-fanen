@@ -90,6 +90,14 @@ Do not carry it over to the external-supply build.  Tantalums fail short rather 
 - 5 V supply of 2 A or more for the permanent build
 - 74AHCT125, or a 3 A silicon rectifier such as a 1N5401, for the data level
 
+## Pixel order
+
+This panel is wired **progressive**: pixel 0 is the first pixel of the top row, every row runs left to right, and index 8 starts the next row back at the left edge.  It is not serpentine, which is what most 8x8 panels use and what the sketches assumed at first.
+
+Anything that draws by coordinate needs this, so the sprite sketches carry a `panel_layout` constant with three settings.  Progressive reverses no rows.  The two serpentine settings reverse alternate rows, and there are two of them because which rows are reversed depends on the corner the data enters.
+
+A wrong setting is easy to recognise once you know the shape of it.  Every second row is mirrored, so a moving sprite looks torn along horizontal lines and the tearing shifts as it moves.  A symmetric sprite hides the fault completely, which is why the ghost looked plausible while the walking lemming did not.  Test with something asymmetric and moving.
+
 ## Measuring the current
 
 The sketch in `dev/current-test` fills all 64 pixels white and steps brightness through 0, 8, 16, 32, 64, 128 and 255, holding each for six seconds so there is time to read a meter.  Build it with `just sketch=current-test build`, which leaves the display sketch untouched.

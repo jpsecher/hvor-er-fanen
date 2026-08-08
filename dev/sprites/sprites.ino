@@ -8,13 +8,12 @@ constexpr uint16_t n_leds = matrix_width * matrix_height;
 constexpr uint8_t brightness_level = 32;
 constexpr uint32_t hold_ms = 1000;
 
-// Most 8x8 panels are wired serpentine, with every second row running right to
-// left.  The colour walk in dev/rgb-matrix tells which this one is: a serpentine
-// panel reverses direction at the end of each row, a progressive panel jumps
-// back to the left edge.  Every sprite comes out mirrored on alternate rows if
-// this is wrong.
-enum class PanelLayout { serpentine, progressive };
-constexpr PanelLayout panel_layout = PanelLayout::serpentine;
+// This panel is progressive: every row runs left to right.  Serpentine panels
+// reverse alternate rows, and which rows depends on the corner the data enters,
+// so both phases are here.  Every sprite comes out mirrored on alternate rows
+// if this is wrong.
+enum class PanelLayout { progressive, serpentine_odd, serpentine_even };
+constexpr PanelLayout panel_layout = PanelLayout::progressive;
 
 struct Shape {
   uint8_t body[matrix_height];
@@ -59,7 +58,9 @@ CRGB leds[n_leds];
 uint8_t frame_index = 0;
 
 static uint16_t xy_to_index(uint8_t x, uint8_t y) {
-  const bool row_reversed = panel_layout == PanelLayout::serpentine && (y % 2) == 1;
+  const bool odd_row = (y % 2) == 1;
+  const bool row_reversed = (panel_layout == PanelLayout::serpentine_odd && odd_row) ||
+                            (panel_layout == PanelLayout::serpentine_even && !odd_row);
   return y * matrix_width + (row_reversed ? matrix_width - 1 - x : x);
 }
 
