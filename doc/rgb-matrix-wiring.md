@@ -8,7 +8,7 @@ How to connect an 8x8 WS2812B panel to the NodeMCU.  There are two builds here: 
 
 Three figures from it govern everything below.  Supply voltage VDD is +3.5 to +5.3 V.  The electrical characteristics are only specified over the narrower range of 4.5 to 5.5 V.  A logic high on DIN needs 0.7 × VDD.
 
-Per-pixel current is not in the datasheet.  The usual figures quoted for the part are about 1 mA per pixel with its LEDs off, because the controller is always running, and about 60 mA at full white.  This panel measured far below the second of those, at 17.4 mA per pixel white, so the numbers below use the measured value where it matters.  See [what this panel actually draws](#what-this-panel-actually-draws).
+Per-pixel current is not in the datasheet.  The usual figures quoted for the part are about 1 mA per pixel with its LEDs off, because the controller is always running, and about 60 mA at full white.  This panel measured far below the second of those, at about 16.6 mA per pixel white, so the numbers below use the measured value where it matters.  See [what this panel actually draws](#what-this-panel-actually-draws).
 
 ## Why the data line is the hard part
 
@@ -37,7 +37,7 @@ Use D2 (GPIO4) for data.  Avoid D3, D4 and D8 (GPIO0, GPIO2, GPIO15), which set 
 
 ### Power budget
 
-USB gives 500 mA, and the NodeMCU takes 80 to 100 mA of it, leaving roughly 350 mA.  The idle panel takes about 60 mA of that before anything is lit.  At the measured 17.4 mA per white pixel, what remains is around 16 pixels at full white, and the whole panel at full white needs about 1.1 A, which is three times the USB budget.
+USB gives 500 mA, and the NodeMCU takes 80 to 100 mA of it, leaving roughly 350 mA.  The idle panel takes about 56 mA of that before anything is lit.  At the measured 16.6 mA per white pixel, what remains is around 17 pixels at full white, and the whole panel at full white needs about 1.1 A, which is three times the USB budget.
 
 Let the library enforce this rather than relying on care in each sketch:
 
@@ -55,7 +55,7 @@ It exercises the data path, the library, the pin choice and the firmware.  It sa
 
 ## Permanent build, external supply
 
-This panel measured 1116 mA with all 64 pixels white, which is three times what USB can give, so the panel is fed from the supply directly and the NodeMCU only shares its ground.  Never power the panel through the NodeMCU.  A 2 A supply covers the measured draw with room to spare, and still covers it if the measurement was held down by the supply and the real figure is somewhat higher.
+This panel measured 1116 mA with all 64 pixels white, which is three times what USB can give, so the panel is fed from the supply directly and the NodeMCU only shares its ground.  Never power the panel through the NodeMCU.  A 2 A supply covers the measured draw with room to spare.
 
 There are two ways to fix the data level, and they are a straight trade between part count and correctness.
 
@@ -104,13 +104,26 @@ On USB the board resets partway up the list.  That is the supply collapsing, not
 
 ### What this panel actually draws
 
-All 64 pixels white at full brightness on the external supply measured **1116 mA**, which is 17.4 mA per pixel, or about 5.8 mA per channel.
+All 64 pixels white at full brightness on the external supply measured **1116 mA** at the panel.  Taking the idle floor out of that leaves about 16.6 mA per white pixel, or 5.5 mA per channel.
 
 That is far below the figure the common WS2812B numbers give.  Those assume roughly 20 mA per channel and predict about 3.9 A for the same test, so FastLED's own estimate, which uses them, was more than three times high.  Treat 1116 mA as the number for this panel and the 3.9 A figure as not applicable to it.
 
-Two explanations were not separated before the measurement was stopped, so this carries a caveat.  Either the panel uses lower-current dies than the standard part, in which case 1116 mA is its real full-white draw, or the supply was current-limiting, in which case 1116 mA describes the supply and the panel would draw more from a stiffer source.  Telling them apart needs the draw for the single-die colours: near 372 mA each would mean the response is linear to white and nothing was limiting, while a proportionally higher figure would mean white ran out of supply.  Measuring the voltage at the panel during the white pass settles it as well, since a reading near 5 V means the supply was not the limit.
+A second measurement confirms that this is the panel and not the supply.  A ghost sprite at brightness 32, which lights 52 pixels in one colour and 4 in white, measured about 100 mA.  Standard current figures predict roughly 220 mA for the same picture, and at that level nothing could have been limiting a 2 A supply, so the standard figures are wrong for this panel rather than the earlier reading being clamped.
 
-The practical consequence either way is that the panel is undemanding.  Even at three times the measured figure it stays inside a 2 A supply, and the earlier concern about needing nearly 4 A does not apply to this hardware.
+Solving the two measurements together gives the panel's characteristics:
+
+| Quantity | This panel | Standard WS2812B figures |
+| --- | --- | --- |
+| Current per channel at full | ~5.5 mA | ~20 mA |
+| One white pixel at full | ~16.6 mA | ~60 mA |
+| All 64 white at full | 1116 mA measured | ~3.9 A |
+| Idle floor, all LEDs off | ~56 mA | ~64 mA |
+
+The derived idle floor agrees with the roughly 64 mA expected from 64 always-running controllers, which is a useful check that the model fits.  The result is also insensitive to the exact ghost reading: anywhere from 90 to 110 mA gives between 5.5 and 5.6 mA per channel.
+
+The practical consequence is that the panel is undemanding.  Everything lit and white draws a little over 1 A, so a 2 A supply has ample margin, and the earlier concern about needing nearly 4 A does not apply to this hardware.  USB still cannot drive the whole panel white, but it can drive far more of it than the standard figures suggest.
+
+To confirm the idle floor directly rather than by inference, run `dev/current-test` and read the meter during its brightness 0 step.
 
 ## Bring-up order
 
