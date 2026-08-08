@@ -1,5 +1,5 @@
 {
-  description = "My Project";
+  description = "Hvor er Fanen?";
   inputs = {
     nixpkgs.url = "https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz";
     flake-utils.url = "github:numtide/flake-utils";
@@ -13,10 +13,21 @@
       pkgs = nixpkgs.legacyPackages.${system};
       projectConfig = import ./.claude/container.nix { inherit pkgs; };
     in {
-      devShells.default = claude-contained.lib.mkDevEnv { inherit pkgs; } {
-        inherit system;
-        projectName = "hvor-er-fanen";
-        inherit (projectConfig) packages ports secrets;
+      # The packages in container.nix are installed inside the container and
+      # mkDevEnv takes no host packages, so esptool is added by extending the
+      # shell it returns.  Flashing needs the USB port, which only the host has.
+      devShells.default = pkgs.mkShell {
+        inputsFrom = [
+          (claude-contained.lib.mkDevEnv { inherit pkgs; } {
+            inherit system;
+            projectName = "hvor-er-fanen";
+            inherit (projectConfig) packages ports secrets;
+          })
+        ];
+        packages = with pkgs; [
+          esptool
+          picocom
+        ];
       };
     });
 }

@@ -1,4 +1,6 @@
-- [ ] Read README-FIRST.md
-- [ ] Change project name in flake.nix
+- [x] Read README-FIRST.md
+- [x] Change project name in flake.nix
 - [ ] Fill in PROJECT.md details
+- [x] 2026-08-08: Document the ESP8266 build and flash workflow in `doc/rgb-matrix-development.md`
+- [x] 2026-08-08: Set up the inner Nix environment for ESP8266 development
 - [x] 2026-05-23: Init claude code setup

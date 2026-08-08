@@ -1,2 +1,29 @@
+fqbn := "esp8266:esp8266:nodemcuv2"
+sketch := "rgb-matrix"
+core := "esp8266:esp8266@3.1.2"
+
 default:
   @just --list
+
+# Install the ESP8266 core and libraries into dev/.arduino
+setup:
+  arduino-cli core update-index
+  arduino-cli core install {{core}}
+  arduino-cli lib install FastLED
+  arduino-cli lib install "ESP Async TCP"
+  arduino-cli lib install "ESP Async WebServer"
+
+# Compile the sketch to dev/build
+build:
+  arduino-cli compile --fqbn {{fqbn}} --output-dir build --warnings all {{sketch}}
+
+# List the boards the installed core provides
+boards:
+  arduino-cli board listall {{fqbn}}
+
+# Show what the container built, ready to flash from the host
+artifacts:
+  @ls -1 build/*.bin build/*.elf 2>/dev/null || echo "Nothing built yet, run 'just build'."
+
+clean:
+  rm -rf build
