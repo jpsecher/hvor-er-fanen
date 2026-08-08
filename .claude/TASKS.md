@@ -1,6 +1,8 @@
 - [ ] Fill in PROJECT.md details
-- [x] 2026-08-08: Walk seven representative colours through every pixel to check colour rendering
-- [x] 2026-08-08: Add the FastLED power cap and disable WiFi in the RGB matrix sketch
+- [x] 2026-08-08: Walk one lit pixel through every position, cycling seven colours
+- [x] 2026-08-08: Measure panel current, 1116 mA for all 64 white at full brightness
+- [x] 2026-08-08: Add `dev/current-test` to measure panel current across brightness steps
+- [x] 2026-08-08: Disable WiFi in the RGB matrix sketch to avoid brownout resets
 - [x] 2026-08-08: Plan the WS2812B panel wiring in `doc/rgb-matrix-wiring.md`
 - [x] 2026-08-08: Document the ESP8266 build and flash workflow in `doc/rgb-matrix-development.md`
 - [x] 2026-08-08: Set up the inner Nix environment for ESP8266 development

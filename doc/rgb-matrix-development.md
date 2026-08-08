@@ -79,6 +79,8 @@ A build fails with a missing `ESPAsyncTCP.h`.  The ESP8266 build of ESP Async We
 
 New tools added to `dev/flake.nix` are not found in a Claude Code session.  The environment is captured once when the session starts, so exit `claude` and start it again.
 
+`just` or `arduino-cli` is not found inside the container.  Neither is installed in the container itself, and both come only from the inner Nix shell, so this means the shell was never entered.  Check the prompt, which reads `[inner]` inside it and `[outer]` in the host shell, or run `echo $IN_NIX_SHELL`, which prints `impure` inside it and nothing outside.  The usual cause is running `dev-shell` from somewhere other than the repo root: it enters the Nix shell only when a `dev` directory exists in the current directory, and otherwise drops into a plain container shell without saying so.  Recover without leaving the container by running `cd /hvor-er-fanen/dev` followed by `nix develop`.
+
 ## Two package choices worth knowing
 
 arduino-cli comes from `arduino-cli.pureGoPkg` rather than the default `arduino-cli`.  The default is wrapped in bubblewrap to provide an FHS layout, which needs a `CAP_SYS_ADMIN` the container does not have, and the Debian-based container already provides the real FHS paths the Arduino toolchain expects.

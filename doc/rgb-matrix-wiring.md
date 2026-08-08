@@ -8,7 +8,7 @@ How to connect an 8x8 WS2812B panel to the NodeMCU.  There are two builds here: 
 
 Three figures from it govern everything below.  Supply voltage VDD is +3.5 to +5.3 V.  The electrical characteristics are only specified over the narrower range of 4.5 to 5.5 V.  A logic high on DIN needs 0.7 × VDD.
 
-Per-pixel current is not in the datasheet.  In practice each pixel draws about 1 mA with its LEDs off, because the controller is always running, and about 60 mA at full white with all three channels at maximum.  A dark 64-pixel panel therefore still draws around 60 mA.
+Per-pixel current is not in the datasheet.  The usual figures quoted for the part are about 1 mA per pixel with its LEDs off, because the controller is always running, and about 60 mA at full white.  This panel measured far below the second of those, at 17.4 mA per pixel white, so the numbers below use the measured value where it matters.  See [what this panel actually draws](#what-this-panel-actually-draws).
 
 ## Why the data line is the hard part
 
@@ -37,7 +37,7 @@ Use D2 (GPIO4) for data.  Avoid D3, D4 and D8 (GPIO0, GPIO2, GPIO15), which set 
 
 ### Power budget
 
-USB gives 500 mA, and the NodeMCU takes 80 to 100 mA of it, leaving roughly 350 mA.  The idle panel takes 60 mA of that before anything is lit.  What remains is about five pixels at full white, or a few dozen at low brightness.
+USB gives 500 mA, and the NodeMCU takes 80 to 100 mA of it, leaving roughly 350 mA.  The idle panel takes about 60 mA of that before anything is lit.  At the measured 17.4 mA per white pixel, what remains is around 16 pixels at full white, and the whole panel at full white needs about 1.1 A, which is three times the USB budget.
 
 Let the library enforce this rather than relying on care in each sketch:
 
@@ -55,7 +55,7 @@ It exercises the data path, the library, the pin choice and the firmware.  It sa
 
 ## Permanent build, external supply
 
-64 pixels at full white need about 3.8 A at 5 V, so the panel is fed from the supply directly and the NodeMCU only shares its ground.  Never power the panel through the NodeMCU.
+This panel measured 1116 mA with all 64 pixels white, which is three times what USB can give, so the panel is fed from the supply directly and the NodeMCU only shares its ground.  Never power the panel through the NodeMCU.  A 2 A supply covers the measured draw with room to spare, and still covers it if the measurement was held down by the supply and the real figure is somewhat higher.
 
 There are two ways to fix the data level, and they are a straight trade between part count and correctness.
 
@@ -90,9 +90,31 @@ Do not carry it over to the external-supply build.  Tantalums fail short rather 
 - 5 V supply of 2 A or more for the permanent build
 - 74AHCT125, or a 3 A silicon rectifier such as a 1N5401, for the data level
 
+## Measuring the current
+
+The sketch in `dev/current-test` fills all 64 pixels white and steps brightness through 0, 8, 16, 32, 64, 128 and 255, holding each for six seconds so there is time to read a meter.  Build it with `just sketch=current-test build`, which leaves the display sketch untouched.
+
+It runs with the power limit off, set by the `power_limit` constant.  That is deliberate and it is the whole point: with the limit enforced, FastLED scales brightness down to stay inside the budget, so the meter reads the budget rather than the panel.
+
+Put the meter in series with the panel's 5 V wire, not across it, and use the 10 A jack.  The milliamp jack on most meters is fused at 200 to 500 mA and this test goes well past that.  Measuring the panel wire rather than the USB input keeps the NodeMCU's own draw out of the reading.
+
+The first step sits at brightness 0, which measures the floor: 64 controllers that are always running, with every LED off.  From there the draw climbs close to linearly with brightness.
+
+On USB the board resets partway up the list.  That is the supply collapsing, not a fault in the sketch, and where it happens is itself a useful number.
+
+### What this panel actually draws
+
+All 64 pixels white at full brightness on the external supply measured **1116 mA**, which is 17.4 mA per pixel, or about 5.8 mA per channel.
+
+That is far below the figure the common WS2812B numbers give.  Those assume roughly 20 mA per channel and predict about 3.9 A for the same test, so FastLED's own estimate, which uses them, was more than three times high.  Treat 1116 mA as the number for this panel and the 3.9 A figure as not applicable to it.
+
+Two explanations were not separated before the measurement was stopped, so this carries a caveat.  Either the panel uses lower-current dies than the standard part, in which case 1116 mA is its real full-white draw, or the supply was current-limiting, in which case 1116 mA describes the supply and the panel would draw more from a stiffer source.  Telling them apart needs the draw for the single-die colours: near 372 mA each would mean the response is linear to white and nothing was limiting, while a proportionally higher figure would mean white ran out of supply.  Measuring the voltage at the panel during the white pass settles it as well, since a reading near 5 V means the supply was not the limit.
+
+The practical consequence either way is that the panel is undemanding.  Even at three times the measured figure it stays inside a 2 A supply, and the earlier concern about needing nearly 4 A does not apply to this hardware.
+
 ## Bring-up order
 
-Work up in steps, so a failure points at one thing.  The sketch in `dev/rgb-matrix` turns the radio off, sets the power limit to 350 mA at 5 V and holds brightness at 32 of 255, which covers step 1 and keeps step 5 out of the way until you want it.
+Work up in steps, so a failure points at one thing.  The sketch in `dev/rgb-matrix` turns the radio off, which keeps step 5 out of the way until you want it.
 
 1. Flash with WiFi off, the power limit set, and brightness low
 2. Light one pixel red, which works even when the supply is marginal
@@ -102,4 +124,6 @@ Work up in steps, so a failure points at one thing.  The sketch in `dev/rgb-matr
 
 The colour order matters for reading the result.  If the red pass looks right and the green or blue pass is dim or missing, the supply is too low for those dies and the data line is fine.  If pixels light in the wrong colour or at random positions in every pass, the problem is the data line rather than the supply.
 
-The sketch walks a single pixel through all 64 positions in one colour, then moves to the next, covering red, green, blue, yellow, cyan, magenta and white.  The three primaries test each die on its own, the three secondaries test each pair, and white tests all three together, which is also the highest current the pattern draws.  Serial names each colour as its pass begins, so a fault can be tied to a colour without watching the panel continuously.
+The sketch walks a single lit pixel through all 64 positions in one colour, then moves to the next, covering red, green, blue, yellow, cyan, magenta and white.  The three primaries test each die on its own, the three secondaries test each pair, and white tests all three together.  Serial names each colour as its pass begins, so a fault can be tied to a colour without watching the panel continuously.
+
+One pixel at a time means the draw stays near the idle floor whatever the colour, so the sketch is safe on USB as well as on the external supply, and it runs at full brightness with no power limit.  Lighting the whole panel is the job of `dev/current-test` instead.
