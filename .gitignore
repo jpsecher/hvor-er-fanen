@@ -9,3 +9,4 @@
 *.drl
 dev/.arduino/
 dev/build/
+.DS_Store

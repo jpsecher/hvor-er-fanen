@@ -15,6 +15,10 @@ See `.claude/<topic>.allium` for the Allium behavioural spec.
 - FastLED
 - ESP8266WiFi & ESPAsyncWebServer
 
+## Hardware
+
+An 8x8 WS2812B panel of 64 pixels on a NodeMCU 1.0, with data on D2 (GPIO4).  See [RGB Matrix wiring](../doc/rgb-matrix-wiring.md) for the two builds, the logic level trade and the power budget.
+
 ## Toolchain
 
 The container compiles and the host flashes, because the dev container has no USB access.  See [RGB Matrix development](../doc/rgb-matrix-development.md) for the commands, the pinned versions and the problems that have already been solved.

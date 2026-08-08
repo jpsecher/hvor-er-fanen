@@ -1,6 +1,8 @@
-- [x] Read README-FIRST.md
-- [x] Change project name in flake.nix
 - [ ] Fill in PROJECT.md details
+- [x] 2026-08-08: Walk seven representative colours through every pixel to check colour rendering
+- [x] 2026-08-08: Add the FastLED power cap and disable WiFi in the RGB matrix sketch
+- [x] 2026-08-08: Plan the WS2812B panel wiring in `doc/rgb-matrix-wiring.md`
 - [x] 2026-08-08: Document the ESP8266 build and flash workflow in `doc/rgb-matrix-development.md`
 - [x] 2026-08-08: Set up the inner Nix environment for ESP8266 development
-- [x] 2026-05-23: Init claude code setup
+- [x] 2026-08-08: Change the project name in flake.nix
+- [x] 2026-08-08: Read README-FIRST.md
