@@ -1,0 +1,26 @@
+{
+  "env": {
+    "CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY": "1"
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard-commit.sh\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Bash(git (add|status|log|diff|branch|stash).*)"
+    ]
+  },
+  "enabledPlugins": {
+    "allium@juxt-plugins": true
+  }
+}

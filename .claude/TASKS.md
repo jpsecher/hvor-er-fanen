@@ -1,0 +1,4 @@
+- [ ] Read README-FIRST.md
+- [ ] Change project name in flake.nix
+- [ ] Fill in PROJECT.md details
+- [x] 2026-05-23: Init claude code setup
