@@ -1,4 +1,5 @@
-- [ ] Fill in PROJECT.md details
+- [ ] Map the four panels to 16x16 coordinates, once the walk has revealed the chain order and rotations
+- [x] 2026-08-09: Extend the pixel walk to 256 pixels so it doubles as the panel assembly check
 - [x] 2026-08-08: Walk one lit pixel through every position, cycling seven colours
 - [x] 2026-08-08: Determine the panel is progressive rather than serpentine, and add `dev/lemmings`
 - [x] 2026-08-08: Add `dev/sprites` with Pac-Man and ghost bitmaps for the 8x8 panel
