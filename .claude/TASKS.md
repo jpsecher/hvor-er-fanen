@@ -1,5 +1,6 @@
 - [ ] Fill in PROJECT.md details
 - [x] 2026-08-08: Walk one lit pixel through every position, cycling seven colours
+- [x] 2026-08-08: Determine the panel is progressive rather than serpentine, and add `dev/lemmings`
 - [x] 2026-08-08: Add `dev/sprites` with Pac-Man and ghost bitmaps for the 8x8 panel
 - [x] 2026-08-08: Characterise panel current at 5.5 mA per channel and a 56 mA idle floor
 - [x] 2026-08-08: Add `dev/current-test` to measure panel current across brightness steps
