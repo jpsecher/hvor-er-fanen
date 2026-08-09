@@ -27,7 +27,7 @@ The switch passes cell current on one pole and gives the MCU a single input on t
 
 ## Hardware
 
-Four 8x8 WS2812B panels arranged 2x2 as a 16x16 display, chained into one run of 256 pixels on a NodeMCU 1.0.  Each panel is progressive.  The chain order and the rotation of each panel are read off the display with the walk in `dev/rgb-matrix`.  Powered from a single 18650 cell driving the panels directly, with an AP130-33 regulator for the ESP8266 and an MCP73831 charger.  See [RGB Matrix wiring](../doc/rgb-matrix-wiring.md) for the wiring, the pin allocation, the power budget, the frame rate and the options that were rejected.
+Four 8x8 WS2812B panels arranged 2x2 as a 16x16 display, chained into one run of 256 pixels on a NodeMCU 1.0.  Each panel is progressive.  The chain order and the rotation of each panel are read off the display with the walk in `dev/rgb-matrix`.  Powered from a single 18650 cell driving the panels directly, with an AP130-33 regulator for the ESP8266, an MCP73831 charger and an AP9101C protection circuit driving two AOB2146L MOSFETs.  See [RGB Matrix wiring](../doc/rgb-matrix-wiring.md) for the wiring, the pin allocation, the power budget, the frame rate and the options that were rejected.
 
 ## Toolchain
 

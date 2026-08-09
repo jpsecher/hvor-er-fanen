@@ -21,6 +21,7 @@
           # The esp8266 core ships a stub python3 tool and calls the system one
           # from elf2bin.py and signing.py during every build.
           python3
+          nodejs_22
         ];
         shellHook = ''
           if [ ! -f /.dockerenv ]; then
