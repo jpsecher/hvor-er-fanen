@@ -1,6 +1,16 @@
 - [ ] Map the four panels to 16x16 coordinates, once the walk has revealed the chain order and rotations
+- [ ] Write the Allium spec for the three display modes, which `PROJECT.md` references but has never existed
+- [ ] Read the mode switch on D1 and select between sprite and map mode
+- [ ] Fetch from the backend API over HTTP and plot the result on the fixed map
+- [ ] Add an ambient light sensor on A0 and dim the display after dark
+- [ ] Add a charge-from-USB circuit to the power supply PCB
+- [ ] Blank the panels while charging, reading the MCP73831 STAT pin, without which the charge cycle never terminates
 - [ ] Measure where these panels lose blue and green as the supply falls, by sweeping a bench supply from 4.2 V down
 - [ ] Design the power supply PCB around a single 18650 cell
+- [x] 2026-08-09: Sweep the RGB matrix markdown for narrative, and drop the unused ESPAsync libraries
+- [x] 2026-08-09: Record the three display modes and the switch in `PROJECT.md`
+- [x] 2026-08-09: Specify the MCP73831 charger in the wiring doc
+- [x] 2026-08-09: Restructure the wiring doc around the settled build, with rejected options in a brief section
 - [x] 2026-08-09: Write the single-cell battery power design into the wiring doc
 - [x] 2026-08-09: Extend the pixel walk to 256 pixels so it doubles as the panel assembly check
 - [x] 2026-08-08: Walk one lit pixel through every position, cycling seven colours

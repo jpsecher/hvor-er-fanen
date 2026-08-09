@@ -4,7 +4,7 @@ How to build, flash and monitor the ESP8266 firmware in `dev/`.  This covers the
 
 ## Two environments
 
-Work is split across two shells, and the split is not a preference.  The dev container has no USB access, because `claude-contained` creates it without `--device` and the container lacks `CAP_SYS_ADMIN`.  So the container compiles and the host talks to the board.
+Work is split across two shells.  The dev container has no USB access, because `claude-contained` creates it without `--device` and the container lacks `CAP_SYS_ADMIN`, so the container compiles and the host talks to the board.
 
 | Where | How to enter | Provides | Used for |
 | --- | --- | --- | --- |
@@ -24,7 +24,7 @@ Then install the Arduino toolchain from the inner shell:
 
     just setup
 
-`just setup` downloads the ESP8266 core and the libraries into `dev/.arduino`, which is about 670 MB and git-ignored.  Keeping them in the project rather than `$HOME` means the whole toolchain is removable with one directory, and nothing leaks between projects.
+`just setup` downloads the ESP8266 core and the libraries into `dev/.arduino`, which is about 670 MB and git-ignored.  Keeping them in the project rather than `$HOME` means the whole toolchain is removable with one directory, and nothing is shared between projects.
 
 ## Building
 
@@ -60,12 +60,11 @@ Ctrl-A Ctrl-X exits.  picocom holds the port open, so close it before flashing a
 
 - ESP8266 core 3.1.2, board `esp8266:esp8266:nodemcuv2`
 - FastLED 3.10.5
-- ESP Async WebServer 3.12.0 with ESP Async TCP 2.0.0
 - arduino-cli 1.5.1, esptool 5.3.1
 
 The hardware reports an ESP8266EX with 4 MB of flash and auto-resets over RTS, which matches the `nodemcuv2` default flash layout of `eesz=4M2M`.  Build for a different board with `just fqbn=esp8266:esp8266:d1_mini build`, or change the default in `dev/justfile`.
 
-## Things that look broken but are not
+## Serial output
 
 The first line after a reset is unreadable, because the ESP8266 boot ROM prints its banner at 74880 baud before the sketch starts at 115200.
 
@@ -75,13 +74,11 @@ Each line starts at the column where the previous line ended, when a line ends w
 
 No `/dev/cu.*` entry appears when the board is plugged in.  macOS has no udev and needs no rule or group, so there is nothing to configure.  Check the cable first, because charge-only USB cables have no data lines and are the most common cause.  Then run `system_profiler SPUSBDataType` to see whether the bridge chip enumerates at all: if it is missing the problem is the cable, port or board, and if it is present the problem is the driver.
 
-A build fails with a missing `ESPAsyncTCP.h`.  The ESP8266 build of ESP Async WebServer needs ESP Async TCP, which arduino-cli does not install automatically, so `just setup` installs it explicitly.
-
 New tools added to `dev/flake.nix` are not found in a Claude Code session.  The environment is captured once when the session starts, so exit `claude` and start it again.
 
 `just` or `arduino-cli` is not found inside the container.  Neither is installed in the container itself, and both come only from the inner Nix shell, so this means the shell was never entered.  Check the prompt, which reads `[inner]` inside it and `[outer]` in the host shell, or run `echo $IN_NIX_SHELL`, which prints `impure` inside it and nothing outside.  The usual cause is running `dev-shell` from somewhere other than the repo root: it enters the Nix shell only when a `dev` directory exists in the current directory, and otherwise drops into a plain container shell without saying so.  Recover without leaving the container by running `cd /hvor-er-fanen/dev` followed by `nix develop`.
 
-## Two package choices worth knowing
+## Package choices
 
 arduino-cli comes from `arduino-cli.pureGoPkg` rather than the default `arduino-cli`.  The default is wrapped in bubblewrap to provide an FHS layout, which needs a `CAP_SYS_ADMIN` the container does not have, and the Debian-based container already provides the real FHS paths the Arduino toolchain expects.
 

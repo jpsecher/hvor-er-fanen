@@ -10,8 +10,6 @@ setup:
   arduino-cli core update-index
   arduino-cli core install {{core}}
   arduino-cli lib install FastLED
-  arduino-cli lib install "ESP Async TCP"
-  arduino-cli lib install "ESP Async WebServer"
 
 # Compile the sketch to dev/build
 build:
