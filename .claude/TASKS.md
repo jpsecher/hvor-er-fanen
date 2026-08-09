@@ -1,4 +1,7 @@
 - [ ] Map the four panels to 16x16 coordinates, once the walk has revealed the chain order and rotations
+- [ ] Measure where these panels lose blue and green as the supply falls, by sweeping a bench supply from 4.2 V down
+- [ ] Design the power supply PCB around a single 18650 cell
+- [x] 2026-08-09: Write the single-cell battery power design into the wiring doc
 - [x] 2026-08-09: Extend the pixel walk to 256 pixels so it doubles as the panel assembly check
 - [x] 2026-08-08: Walk one lit pixel through every position, cycling seven colours
 - [x] 2026-08-08: Determine the panel is progressive rather than serpentine, and add `dev/lemmings`

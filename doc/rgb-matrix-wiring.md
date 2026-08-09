@@ -1,6 +1,6 @@
 # RGB Matrix wiring
 
-How to connect four 8x8 WS2812B panels to the NodeMCU as one 256-pixel chain.  There are two builds here: a bench build powered from USB for testing now, and a permanent build with an external supply.  Start with the bench build, because it needs no extra parts and it proves the firmware before any soldering is hard to undo.
+How to connect four 8x8 WS2812B panels to the NodeMCU as one 256-pixel chain.  There are three builds here: a bench build powered from USB for testing now, a permanent build with an external 5 V supply, and the intended [battery build on a single 18650 cell](#battery-build-single-18650-cell).  Start with the bench build, because it needs no extra parts and it proves the firmware before any soldering is hard to undo.
 
 ## The panel
 
@@ -24,6 +24,8 @@ The ESP8266 drives 3.3 V, and the panel wants 0.7 × VDD.  Lowering the panel's 
 | 3.3 V | 2.31 V | +0.99 V | below the supply minimum, colours break |
 
 The bottom row is why a 3.3 V supply is not the easy answer it looks like.  The green and blue dies have forward voltages near 3.0 to 3.2 V, so at 3.3 V the internal current sink has no headroom left: red still lights, green and blue go dim or dark, and white turns orange.  The panel does not fail cleanly, it just looks wrong, and it varies with temperature and between production batches.
+
+All of this applies to a 5 V build.  A cell sits between 3.5 and 4.2 V, which puts the threshold at 2.45 to 2.94 V and leaves margin everywhere, so the [battery build](#battery-build-single-18650-cell) does not have this problem and needs no level shifter.  Skip the rest of this trade if that is the build you are making.
 
 ## Bench build, powered from USB
 
@@ -50,6 +52,8 @@ FastLED then scales brightness down to stay inside the budget whatever the sketc
 ### Expect brownout resets, not crashes
 
 The ESP8266 draws 300 to 400 mA in bursts when the WiFi radio transmits.  With the LEDs drawing at the same time, the 5 V rail sags, the onboard regulator's 3.3 V output dips, and the chip resets.  This looks exactly like a firmware crash, and it usually appears only once WiFi connects.  Keep the radio off for the first tests so it is not a variable, and add the power limit above before turning it on.
+
+This is a property of USB through a thin cable rather than of the firmware.  A cell has an internal resistance near 30 mΩ, so the same 400 mA burst sags it about 12 mV, and the [battery build](#battery-build-single-18650-cell) should largely be free of this.  Still enable the radio as the last bring-up step, so that if resets do appear the cause is not in doubt.
 
 ### What the bench build does not prove
 
@@ -78,6 +82,116 @@ A silicon diode in series with the panel supply is the alternative, dropping abo
               └── NodeMCU GND
 
 This needs no logic chip and gives a solid 0.29 V of margin, at the cost of running just below the 4.5 V characterisation floor and losing a little blue and green brightness.  Size the diode for the full panel current: a 1 A part such as a 1N4001 is not enough, so use a 3 A rectifier such as a 1N5401.  Do not substitute a Schottky, because its smaller drop leaves the panel near 4.6 V and the threshold back at 3.2 V, which is the marginal case again.
+
+## Battery build, single 18650 cell
+
+The panels run straight from the cell with no converter of any kind, and the ESP8266 gets its own 3.3 V regulator.  This is the intended build.
+
+The panel measurements in this document are taken from this hardware and can be trusted.  Everything about the battery is calculated from them together with standard 18650 and ESP8266 figures, and none of it has been checked on a bench yet.  Treat the runtimes as estimates until they are measured.
+
+### Why the cell drives the panel directly
+
+A cell runs 4.2 V charged to about 3.0 V empty, and the WS2812B wants 3.5 V absolute minimum.  That looks like it needs a boost converter to 5 V, but it does not, for a reason that is easy to miss: **the WS2812B drives its LEDs with constant-current sinks.**  Channel current does not follow VDD as long as there is headroom above the LED forward voltage.  The panel therefore draws the same milliamps at 3.7 V as it does at 5 V, which is the same current at a lower voltage and so less power.  Boosting to 5 V would raise the voltage without reducing the current, and add converter losses as well.
+
+There are two further gains.  Direct drive removes the converter, its cost and its inrush, and it removes the level shifting problem this document spends most of its length on: at 3.5 to 4.2 V the DIN threshold is 2.45 to 2.94 V against a 3.3 V drive, so there is margin across the whole usable range.
+
+    cell + ──┬── panel 5V pads
+             ├── 1000uF +
+             └── LDO in ── LDO out ── NodeMCU 3V3
+    ESP D2 ──[470R]── panel DIN
+    cell - ──┬── panel GND
+             ├── 1000uF -
+             └── NodeMCU GND
+
+What it costs is the bottom of the discharge.  Below roughly 3.6 V the green and blue dies, whose forward voltages sit near 3.0 to 3.2 V, run out of headroom and white shifts towards orange.  A cell holds above 3.5 V for about 85 to 90% of its capacity, so this affects the last part of the discharge rather than all of it, and the colour shift is a usable warning that the cell is nearly empty.  Where it actually happens on these panels is not known.  The standard current figures were wrong for this hardware by more than three times, as [what this panel actually draws](#what-this-panel-actually-draws) records, so the standard voltage figures deserve the same suspicion.  Measure it: put one panel on a bench supply, show white at a moderate brightness, and walk the voltage down from 4.2 V in 0.1 V steps until the colour breaks.
+
+### Runtime
+
+| Display content | Cell current | Direct from cell | Through a 5 V boost |
+| --- | --- | --- | --- |
+| Blank, panel idle floor only | 244 to 294 mA | ~9 to 11 h | ~6.4 h |
+| Sprite at brightness 32 | 420 to 470 mA | ~5.7 to 6.4 h | ~4 h |
+| All 256 lit, one colour, brightness 128 | ~1030 mA | ~2.6 h | ~1.9 h |
+| All white, full brightness | ~4550 mA | ~0.6 h | ~0.43 h |
+
+Assumes 2700 mAh usable down to a 3.6 V cutoff, the 224 mA panel idle floor from 256 always-running controllers, and the ESP8266 between 20 mA with the radio off and 70 mA receiving.  The ranges in the first two rows are that difference.  Boost figures assume 90% efficiency and 3.6 V average, and get the full 3000 mAh because they can run the cell lower.
+
+Two things follow.  Direct drive gives roughly 40% more runtime even after giving up the last 10% of the cell.  And the 224 mA idle floor cannot be reduced in software, because FastLED only scales the lit pixels, so **a blank display still empties the cell in about half a day**.  If the display should survive being left alone, it needs a MOSFET load switch that actually disconnects the panels, not a black frame.
+
+### Powering the ESP8266
+
+An input that starts above 3.3 V and ends below it looks like a job for a buck-boost, and it is not.  A modern LDO with 250 mV dropout stops regulating at 3.55 V, and the panel loses its colours at about the same place, so a buck-boost would buy capacity the display cannot use.  Efficiency is Vout/Vin, which at 3.3 V from 3.7 V is 89% — within a few points of a switcher, with no inductor and no switching noise beside a data line that has limited margin.
+
+Do not use the AMS1117 on the NodeMCU.  Its 1.1 V dropout needs 4.4 V in, which is why VIN cannot be fed from a cell at all.
+
+The part fitted here is an **AP130-33**: 3.3 V fixed, 300 mA maximum, dropout 0.4 to 0.5 V at 300 mA, quiescent current 100 µA, input up to 5.5 V, in a SOT-89-3 package with no enable pin.  See the [Diodes AP130 datasheet](https://www.diodes.com/assets/Datasheets/AP130.pdf).
+
+Those two headline figures look poor beside the 600 mA parts below, and both are quoted at full load, which is not where this runs.  Dropout falls with load current, so at the loads that actually occur:
+
+| ESP8266 state | Load | Dropout | Regulation stops at |
+| --- | --- | --- | --- |
+| Radio off, as the firmware runs today | ~20 mA | ~30 to 50 mV | ~3.35 V |
+| Receiving continuously | ~70 mA | ~120 mV | ~3.42 V |
+| Transmitting | 300 to 400 mA | over the 300 mA limit | — |
+
+The dropout figures for 20 and 70 mA are scaled from the 300 mA datasheet number rather than read from a curve, so treat them as estimates.  They are far enough from the limit that the imprecision does not change anything: both sit below the roughly 3.6 V where the panel loses blue and green, so **the regulator outlives the display** and the argument above holds with margin.  Quiescent current of 100 µA is irrelevant beside a panel idle floor of 224 mA.
+
+The real limit is the 300 mA ceiling, which the radio exceeds when it transmits.  Exceeding it makes the regulator current-limit, the rail sag and the chip reset, which looks exactly like the USB brownouts described earlier and is just as easy to mistake for a firmware fault.
+
+Two things make transmitting workable on a 300 mA part.
+
+Put **1000 µF on the 3.3 V rail** beside the ESP.  A capacitor cannot supply a whole burst — at the full 400 mA, holding the rail within 100 mV lasts about 55 µs against an 802.11b frame of one to two milliseconds.  But it does not have to, because the regulator supplies 300 mA of that and the capacitor only covers the difference: 0.1 A × 2 ms / 300 mV is about 670 µF, so 1000 µF carries the burst with margin.  Sizing the capacitor against the deficit rather than the whole burst is what makes the smaller regulator viable.
+
+Reduce the transmit power with `WiFi.setOutputPower`.  The radio defaults to 20.5 dBm, and a display talking to an access point in the same room does not need it; running 802.11n nearer 14 dBm cuts the peak substantially.
+
+SOT-89-3 has only input, output and ground, so there is no way to shut the regulator down from firmware.  If the ESP should ever be switched off rather than slept, it needs its own load switch, in the same way the panels do.
+
+If the 300 mA ceiling later becomes a real constraint, these are the parts to fit instead.  Note that all of them are SOT-23-5 or SOT-25 and so need a different footprint from the AP130-33.
+
+| Part | Package | Current | Dropout | Notes |
+| --- | --- | --- | --- | --- |
+| AP2112K-3.3 | SOT-23-5 | 600 mA | 250 mV at full load | Used on several ESP dev boards, easy to get and to solder |
+| XC6220B331 | SOT-25 | 1 A | 200 mV | Most headroom for transmit bursts |
+| ME6211C33 | SOT-23-5 | 500 mA | ~250 mV | Cheapest, common on LCSC |
+| TLV75533P | SOT-23-5 | 500 mA | ~200 mV | Best datasheet if the curves need checking |
+
+### NodeMCU or a bare module
+
+Feeding regulated 3.3 V into the NodeMCU's 3V3 pin bypasses the AMS1117 and works, and flashing and serial keep working exactly as they do now.  The one rule is to **never have USB connected while the board is on battery**, because the LDO and the AMS1117 then drive the same rail against each other.  Add a Schottky or a jumper if that will happen by accident.
+
+A bare ESP-12F on the board drops the AMS1117 and the USB serial chip, saves space and cuts idle draw, at the cost of providing a programming path: either a USB serial chip, or a header for an external adapter along with the boot strapping of GPIO0 and GPIO15 low and EN and GPIO2 high.  The existing `esptool` flow works unchanged with an adapter.
+
+Keep the NodeMCU for now.  The panel mapping and the colour cutoff are both still unknown, and flashing that works without thought is worth more at this stage than the board space.  A NodeMCU footprint on the PCB leaves the choice open.
+
+### WiFi receive
+
+Receiving does not avoid transmitting.  An associated station acknowledges every unicast frame it receives, within 10 µs and in MAC hardware, whether the sketch sends anything or not, and association, DHCP and ARP are transmissions too.  **An application that only receives still needs a regulator sized for the transmit peak.**
+
+Two modes genuinely never transmit, if that is what is wanted.  ESP-NOW broadcast receive needs no association and broadcast frames are not acknowledged.  Promiscuous mode only listens.  Neither works with `ESPAsyncWebServer`, which needs a normal association.
+
+| ESP8266 state | Current at 3.3 V |
+| --- | --- |
+| Radio off | ~20 mA |
+| Modem-sleep, waking on DTIM beacons | ~15 to 25 mA |
+| Receiving continuously | ~56 to 70 mA |
+
+WiFi is not what limits this build.  Against the 224 mA panel idle floor, continuous receive costs about 10% of runtime, so it is not worth contorting the design to save.  If it is wanted cheaply, modem-sleep powers the radio down between DTIM beacons and wakes it to listen, typically every 100 to 300 ms: everything still arrives, delayed by up to one beacon interval, at roughly a third of the current.
+
+### Charging and protection
+
+Charging is future work, but two decisions are worth knowing before the board is laid out.
+
+A TP4056 is cheap and available everywhere, but it has no power path: the load hangs on the cell terminals, which disturbs charge termination and means the cell never sees a clean end of charge.  A BQ24074 costs more and comes in a QFN, but it runs the system from USB and charges the cell at the same time.  Choose it if the display should keep working while plugged in.
+
+Protection is a separate circuit from charging, and here it needs care: **with the panel wired straight to the cell, the protection FETs carry panel current, not just the ESP's.**  The DW01A and FS8205 pairing found on most TP4056 modules trips somewhere around 2 to 3 A.  Moderate brightness is nowhere near that, but a full white frame would trip it.  Either note the limit as the real brightness ceiling, or choose protection sized for the panel.
+
+### Board layout
+
+**Star ground at the cell terminals.**  The panel and the ESP must return to the cell separately rather than sharing a trace.  Panel current swings by amps as pixels change, and if the ESP sits downstream of that, its ground reference moves with the display — and the DIN threshold is measured against exactly that reference.  Getting this wrong builds a board that works on the bench and glitches whenever the picture is busy.
+
+Pour thick copper for the cell to panel path only.  The regulator branch is a few hundred milliamps and needs nothing special.  The 1000 µF electrolytic goes at the panel input, and the 470 Ω resistor stays in series with DIN, close to the panel.
+
+Lay out a SOT-89-3 footprint for the regulator, and place the 1000 µF rail capacitor beside the ESP even if it is left unpopulated while the radio is off.  Enabling WiFi later then costs one component rather than a new board.
 
 ## Frame rate
 
@@ -111,10 +225,23 @@ Do not carry it over to the external-supply build.  Tantalums fail short rather 
 
 ## Parts
 
+Common to every build:
+
 - 470 Ω resistor in series with DIN, protecting the first pixel from edge reflections
-- 22 µF tantalum rated 10 V or more for the bench build, replaced by a 1000 µF electrolytic for the permanent build
-- 5 V supply of 6 A or more for the permanent build, covering all four panels white
+- 1000 µF electrolytic at the panel input, or a 22 µF tantalum rated 10 V or more for the bench build only
+
+For the permanent 5 V build:
+
+- 5 V supply of 6 A or more, covering all four panels white
 - 74AHCT125, or a 3 A silicon rectifier such as a 1N5401, for the data level
+
+For the battery build, which needs neither of those two:
+
+- 18650 cell, with protection sized for the panel current rather than a 2 to 3 A module
+- AP130-33 low-dropout regulator for the ESP8266, in SOT-89-3, or a 600 mA part such as the AP2112K-3.3 if WiFi transmit needs more headroom
+- 1000 µF on the 3.3 V rail, beside the ESP8266
+- MOSFET load switch to disconnect the panels, without which the idle floor drains the cell
+- TP4056, or a BQ24074 if the display should run while charging
 
 ## Pixel order
 
