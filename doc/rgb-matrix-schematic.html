@@ -174,7 +174,7 @@
 
   <figure>
     <div class="sheet">
-      <svg class="schem" viewBox="0 0 1600 1320" role="img" aria-label="Schematic of the RGB matrix power supply board in four blocks: an 18650 cell with an AP9101C protection controller driving two AOB2146L MOSFETs in the negative lead; an MCP73831 charger across the pack terminals; a two-pole three-position mode switch feeding an AP130-33 regulator; and four chained WS2812B panels with a NodeMCU, including an LDR divider on the A0 analog input.">
+      <svg class="schem" viewBox="0 0 1600 1320" role="img" aria-label="Schematic of the RGB matrix power supply board in four blocks: an 18650 cell with a 2 A time-lag fuse and an AP9101C protection controller driving two AOB2146L MOSFETs in the negative lead; an MCP73831 charger across the pack terminals; a lid-interlocked power switch and a separate signal-only mode switch, feeding an AP130-33 regulator; and four chained WS2812B panels with a NodeMCU, including an LDR divider on the A0 analog input.">
         <defs>
           <g id="gnd">
             <line x1="0" y1="0" x2="0" y2="12" class="wire"/>
@@ -202,8 +202,13 @@
         <rect x="40" y="60" width="740" height="600" rx="4" class="frame"/>
         <text x="62" y="100" class="lbl-blk">1 · CELL AND PROTECTION</text>
 
-        <!-- P+ rail -->
-        <polyline points="120,200 700,200" class="wire-hi"/>
+        <!-- P+ rail, fused at the cell -->
+        <line x1="120" y1="200" x2="250" y2="200" class="wire-hi"/>
+        <rect x="250" y="190" width="80" height="20" class="body-box"/>
+        <line x1="250" y1="200" x2="330" y2="200" class="wire"/>
+        <line x1="330" y1="200" x2="700" y2="200" class="wire-hi"/>
+        <text x="290" y="180" class="ref" text-anchor="middle">F1</text>
+        <text x="290" y="230" class="lbl-s" text-anchor="middle">2 A, time-lag</text>
         <rect x="704" y="186" width="66" height="28" rx="3" class="flag"/>
         <text x="737" y="205" class="flag-t" text-anchor="middle">P+</text>
 
@@ -371,47 +376,36 @@
 
         <!-- ============ BLOCK 3 — SWITCH AND REGULATOR ============ -->
         <rect x="810" y="60" width="750" height="600" rx="4" class="frame"/>
-        <text x="832" y="100" class="lbl-blk">3 · MODE SWITCH AND 3.3 V REGULATOR</text>
+        <text x="832" y="100" class="lbl-blk">3 · SWITCHES AND 3.3 V REGULATOR</text>
 
         <rect x="826" y="186" width="66" height="28" rx="3" class="flag"/>
         <text x="859" y="205" class="flag-t" text-anchor="middle">P+</text>
         <line x1="892" y1="200" x2="960" y2="200" class="wire-hi"/>
 
-        <rect x="930" y="140" width="250" height="320" rx="4" class="frame"/>
-        <text x="1055" y="132" class="lbl-s" text-anchor="middle">SW1 · 2-pole 3-position ON-OFF-ON · 3 A</text>
-
-        <!-- pole A, cell current -->
-        <text x="946" y="170" class="lbl-s">pole A — cell current</text>
+        <!-- SW1 power, interlocked with the charging-port lid -->
+        <rect x="900" y="118" width="300" height="30" rx="3" class="frame"/>
+        <text x="1050" y="138" class="lbl-s" text-anchor="middle">mechanically coupled to the charging-port lid</text>
+        <line x1="1005" y1="148" x2="1005" y2="180" class="frame"/>
         <circle cx="960" cy="200" r="4.5" class="dot"/>
-        <line x1="965" y1="197" x2="1076" y2="172" class="wire-hi"/>
-        <circle cx="1080" cy="170" r="4.5" class="open"/>
-        <circle cx="1080" cy="200" r="4.5" class="open"/>
-        <circle cx="1080" cy="230" r="4.5" class="open"/>
-        <text x="1092" y="174" class="lbl-s">1</text>
-        <text x="1092" y="204" class="lbl-s">2</text>
-        <text x="1092" y="234" class="lbl-s">3</text>
-        <polyline points="1085,170 1140,170 1140,230 1085,230" class="wire-hi"/>
-        <circle cx="1140" cy="200" r="4.5" class="dot"/>
-        <line x1="1140" y1="200" x2="1200" y2="200" class="wire-hi"/>
+        <line x1="965" y1="196" x2="1046" y2="176" class="wire-hi"/>
+        <circle cx="1050" cy="200" r="4.5" class="dot"/>
+        <line x1="1050" y1="200" x2="1200" y2="200" class="wire-hi"/>
+        <text x="1005" y="234" class="ref" text-anchor="middle">SW1</text>
+        <text x="1005" y="250" class="lbl-s" text-anchor="middle">power · SPST · 3 A</text>
+        <text x="1005" y="266" class="lbl-s" text-anchor="middle">off whenever the lid is open</text>
 
-        <!-- mechanical link -->
-        <line x1="1020" y1="215" x2="1020" y2="345" class="frame"/>
-
-        <!-- pole B, mode signal -->
-        <text x="946" y="330" class="lbl-s">pole B — mode signal</text>
-        <circle cx="960" cy="360" r="4.5" class="dot"/>
-        <line x1="965" y1="357" x2="1076" y2="332" class="wire"/>
-        <circle cx="1080" cy="330" r="4.5" class="open"/>
-        <circle cx="1080" cy="360" r="4.5" class="open"/>
-        <circle cx="1080" cy="390" r="4.5" class="open"/>
-        <text x="1092" y="334" class="lbl-s">1</text>
-        <text x="1092" y="364" class="lbl-s">2</text>
-        <text x="1092" y="394" class="lbl-s">3</text>
-        <polyline points="1085,390 1140,390 1140,420" class="wire"/>
-        <use href="#gnd" x="1140" y="420"/>
-        <polyline points="960,360 892,360" class="wire"/>
+        <!-- SW2 mode, signal only -->
         <rect x="818" y="346" width="74" height="28" rx="3" class="flag-s"/>
         <text x="855" y="365" class="flag-st" text-anchor="middle">MODE</text>
+        <line x1="892" y1="360" x2="960" y2="360" class="wire"/>
+        <circle cx="960" cy="360" r="4.5" class="dot"/>
+        <line x1="965" y1="356" x2="1046" y2="336" class="wire"/>
+        <circle cx="1050" cy="360" r="4.5" class="dot"/>
+        <polyline points="1050,360 1100,360 1100,410" class="wire"/>
+        <use href="#gnd" x="1100" y="410"/>
+        <text x="1005" y="394" class="ref" text-anchor="middle">SW2</text>
+        <text x="1005" y="410" class="lbl-s" text-anchor="middle">mode · SPST · signal only</text>
+        <text x="1005" y="426" class="lbl-s" text-anchor="middle">closed = D1 low</text>
 
         <!-- VSW rail -->
         <line x1="1200" y1="200" x2="1490" y2="200" class="wire-hi"/>
@@ -591,12 +585,13 @@
           <tr><th>Net</th><th>Runs between</th><th>Note</th></tr>
         </thead>
         <tbody>
-          <tr><td>P+ / CELL+</td><td>BT1 positive, R1 to U2 VDD, U1 VBAT, SW1 pole A common</td><td>Protection is low side only, so the pack positive is the cell positive. U2 stays powered with the switch off, at 3 µA.</td></tr>
+          <tr><td>P+</td><td>F1, R1 to U2 VDD, U1 VBAT, SW1</td><td>Protection is low side only, so the pack positive is the cell positive behind the fuse. U2 stays powered with SW1 open, at 3 µA.</td></tr>
+          <tr><td>CELL+</td><td>BT1 positive, F1</td><td>The only node ahead of the fuse. Keep it to the length of the holder tab.</td></tr>
           <tr><td>CELL−</td><td>BT1 negative, Q1 source, U2 VSS, C1</td><td>Inside the protection loop. Nothing else on the board returns here.</td></tr>
           <tr><td>P−</td><td>Q2 source, U2 VM through R2, U1 VSS, U3 GND, panel GND, A1 GND, R8</td><td>The star point. Panel and MCU returns arrive separately, never sharing a trace.</td></tr>
-          <tr><td>VSW</td><td>SW1 pole A outers, panel 5V, C3, U3 IN, C6</td><td>Cell voltage after the switch, 4.2 V down to 3.2 V. No converter.</td></tr>
+          <tr><td>VSW</td><td>SW1, panel 5V, C3, U3 IN, C6</td><td>Cell voltage after the power switch, 4.2 V down to 3.2 V. No converter.</td></tr>
           <tr><td>+3V3</td><td>U3 OUT, C7, C8, R5, A1 3V3 pin</td><td>Feeds the NodeMCU 3V3 pin directly, bypassing its onboard AMS1117.</td></tr>
-          <tr><td>MODE</td><td>SW1 pole B common, R5, A1 D1 (GPIO5)</td><td>Grounded in one live position, pulled high in the other. The centre position removes power, so nothing reads it.</td></tr>
+          <tr><td>MODE</td><td>SW2, R5, A1 D1 (GPIO5)</td><td>Grounded when SW2 is closed, pulled high when open. Carries no power, so it can be polled at runtime and mode changes need no reboot.</td></tr>
           <tr><td>DATA</td><td>A1 D2 (GPIO4), R6, DP1 DIN</td><td>3.3 V drive against a 0.7 × VDD threshold. Works over the whole cell range with no level shifter.</td></tr>
           <tr><td>LIGHT</td><td>R7 and R8 junction, A1 A0</td><td>Ambient light divider, fed from +3V3 rather than VSW so the reading does not move with cell voltage.</td></tr>
           <tr><td>VBUS</td><td>J1, U1 VDD, C4</td><td>Present only while charging.</td></tr>
@@ -631,7 +626,9 @@
           <tr><td>C6</td><td>Ceramic</td><td>1 µF</td><td>—</td><td>Regulator input.</td></tr>
           <tr><td>C7</td><td>Ceramic</td><td>10 µF</td><td>—</td><td>Regulator output. Required for stability whatever else is on the rail.</td></tr>
           <tr><td>C8</td><td>Electrolytic</td><td>1000 µF</td><td>—</td><td>Beside the ESP8266. Leave the footprint even if unpopulated while the radio is off.</td></tr>
-          <tr><td>SW1</td><td>Toggle</td><td>3 A</td><td>2-pole 3-position</td><td>ON-OFF-ON, off in the centre.</td></tr>
+          <tr><td>F1</td><td>Fuse, time-lag</td><td>2 A</td><td>holder or clips</td><td>Backstop for a MOSFET failing short. Must be slow-blow — see the note below.</td></tr>
+          <tr><td>SW1</td><td>Power switch</td><td>3 A</td><td>SPST</td><td>Carries cell current. Coupled to the charging-port lid so it is off whenever the lid is open.</td></tr>
+          <tr><td>SW2</td><td>Mode switch</td><td>signal</td><td>SPST</td><td>Any small slide switch. Grounds D1 in one position and leaves the pull-up to it in the other.</td></tr>
           <tr><td>J1</td><td>USB connector</td><td>5 V</td><td>—</td><td>Keep separate from the NodeMCU flashing port.</td></tr>
           <tr><td>A1</td><td>NodeMCU 1.0</td><td>—</td><td>module</td><td>Fed on its 3V3 pin.</td></tr>
           <tr><td>DP1–DP4</td><td>WS2812B panel</td><td>8×8</td><td>—</td><td>Chained into one run of 256 pixels.</td></tr>
@@ -643,13 +640,15 @@
   <section>
     <h2>Before you route</h2>
     <div class="note">
-      <p><strong>The mode switch must be in its centre position while charging.</strong> Termination is 7.5% of the programmed current, which is 22.5 mA, and a blank display already draws 244 to 294 mA from the same node. The cycle never completes with the display powered, and blanking the panels in firmware does not help, because the 224 mA floor is 256 always-running controllers.</p>
+      <p><strong>The lid is what makes charging work, so the interlock is a functional part and not a convenience.</strong> Termination is 7.5% of the programmed current, which is 22.5 mA, and a blank display already draws 244 to 294 mA from the same node. With the display powered the cycle never completes, and at sprite brightness the cell discharges while nominally charging — silently, because no firmware can read STAT. Blanking the panels in software does not help either, since the 224 mA floor is 256 always-running controllers. SW1 has to be open, and coupling it to the lid is what guarantees that.</p>
     </div>
     <ul>
+      <li><strong>F1 must be time-lag, and it must stay slower than the electronic trip.</strong> It exists for one fault the AP9101C cannot see — a MOSFET failing drain-to-source, which leaves the protection silently gone. Everything else is already caught faster and resettably, so the fuse must never act first. Two numbers bound it: the 1000 µF through about 50 mΩ gives an 84 A peak with a 50 µs time constant, so each switch-on is I² t = 84² × 25 µs ≈ 0.18 A²s, and repeated pulses accumulate — want a melting I² t of at least 0.9 A²s. A 2 A fast-blow sits in the same order as the inrush and will fatigue open; a 2 A time-lag is typically an order of magnitude above it. Put it on clips rather than soldered, and keep the cell-side track no longer than the holder tab.</li>
       <li><strong>Star ground at P−.</strong> The panel return and the NodeMCU return each reach P− on their own path. Panel current swings by more than an ampere as pixels change, and if the ESP sits downstream of that, its ground reference moves with the picture — and the DIN threshold is measured against exactly that reference.</li>
       <li><strong>Pour thick copper on both sides of the cell path:</strong> cell positive through SW1 to the panels, and panel ground through P− and the two MOSFETs back to the cell negative. The regulator branch is a few hundred milliamps and needs nothing special.</li>
       <li><strong>Both MOSFET tabs are the same node.</strong> TO-263 tabs are the drain and the two drains are common here, so they share one pour with no isolation between them. Dissipation is 36 mW across the pair, so the pour is for soldering rather than cooling.</li>
-      <li><strong>Never let USB and the cell drive the 3.3 V rail together.</strong> This is the reason to keep the charging port separate from the NodeMCU flashing port.</li>
+      <li><strong>Put both USB connectors behind the same lid.</strong> Flashing through the NodeMCU socket with the cell connected puts its onboard AMS1117 on the 3.3 V rail alongside U3, and USB and the cell must never drive that rail together. That is the same fault class as charging with the display on, so one lid covering both ports closes both with one mechanism.</li>
+      <li><strong>Check the switch rating against the mechanism.</strong> SW1 carries the 1.5 A worst frame, and slide switches with large actuators are commonly rated 0.3 to 0.5 A — so the neat version, where the switch body itself shrouds the socket, may not have a part that fits. Either let the lid drive a proper 3 A toggle, or put a logic-level P-channel load switch in the positive lead and let the mechanism operate only its gate, which drops the mechanical part to microamps and allows a microswitch or a reed switch and magnet. Both arrangements fail safe: a jam with the lid shut prevents charging, a jam with it open prevents switch-on.</li>
       <li><strong>Measure the AP9101C overcharge threshold before committing the layout.</strong> VCU detects between 4.200 and 4.250 V while the MCP73831-2 regulates between 4.168 and 4.232 V, and those ranges overlap. Ramp a bench supply across VDD and VSS from 4.0 V and watch CO. If the parts in hand detect at 4.240 V or above there is enough margin.</li>
       <li><strong>Keep the LDR where it cannot see the panel.</strong> A photocell facing a 16×16 display is a feedback loop — bright frame, high reading, brightness stays up. Put it on a face pointing away from the front, or recess it in a short tube. This decides whether the feature works, more than the choice of part does.</li>
       <li><strong>R8 shares its node with the NodeMCU's own divider.</strong> The board carries roughly 220 kΩ and 100 kΩ from the A0 header, so about 320 kΩ to ground sits in parallel with R8 — 100 kΩ becomes about 76 kΩ in practice. Measure the board's actual resistors before sizing R8, since NodeMCU variants differ. The LDR is on the top leg for this reason: on the bottom leg that 320 kΩ would swamp the dark end, which is the range night dimming depends on.</li>
@@ -659,7 +658,7 @@
   <section>
     <h2>What this sheet does not decide</h2>
     <p>Pin numbers are shown only for U2 and U3, where they were confirmed against the datasheet and the top marking. For U1 and the MOSFETs, take the numbering from the KiCad symbol and check it against the datasheet when you pick the footprint.</p>
-    <p>Which live switch position is sprites and which is map is not fixed here — pole B grounds D1 in one of them and firmware decides the meaning. The charger STAT pin is drawn unconnected, since no firmware runs while charging; the 470 Ω and LED indicator from VBUS to STAT can be added if you want a visible charge light.</p>
+    <p>Which SW2 position is sprites and which is map is not fixed here — it grounds D1 in one of them and firmware decides the meaning. Because SW2 carries no power, D1 can be polled in the loop rather than read once at boot, so a mode change no longer costs a reboot and a WiFi reassociation the way the earlier three-position toggle did. The charger STAT pin is drawn unconnected, since no firmware runs while charging; the 470 Ω and LED indicator from VBUS to STAT can be added if you want a visible charge light.</p>
   </section>
 
 </div>
