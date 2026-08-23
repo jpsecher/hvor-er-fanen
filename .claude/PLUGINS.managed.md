@@ -24,7 +24,7 @@ Availability is then a one-off per environment.  Register the marketplace first,
 
 Skipping the first line makes the second fail: without the marketplace registered there is nothing for `@juxt-plugins` to resolve against.
 
-Run both from the shell, not from the `/plugin` prompt inside a session.  An in-session install was observed recording `scope: project` with the project's path even when `--scope user` was given, which is the binding this whole file exists to avoid.  The shell form reports `(scope: user)` and records no project path.
+Run both from the shell, not from the `/plugin` prompt inside a session.  An in-session install records `scope: project` with the project's path even when `--scope user` is given, which is the binding this whole file exists to avoid.  The shell form reports `(scope: user)` and records no project path.
 
 A project-scope entry cannot be removed with `claude plugin uninstall` while `.claude/settings.json` still enables the plugin — Claude Code refuses to uninstall a declaration shared with the team.  Install the user-scope entry first; the stale project entry is then inert and can be dropped from `installed_plugins.json` by hand.
 
@@ -42,4 +42,4 @@ The container mounts the host Claude directory, so credentials, settings and his
 
 Containers therefore keep their own plugin store, shared across every containerised project using the same Claude directory.  So a plugin is installed once for all containers and once on the host: twice in total, never once per project.
 
-The store is a Docker volume applied when the container is created, so a container built before this existed keeps the old shared mount until it is recreated with `remove-dev` followed by `start-dev`.  The volume starts empty rather than inheriting the host's plugins, so the first containerised session needs the one-off install above.  It is deliberately left alone by `remove-dev-full`, which is per-project — removing it there would wipe the plugins of every other containerised project sharing the Claude directory.
+The store is a Docker volume applied when the container is created, so a container that predates the volume picks it up only when recreated with `remove-dev` followed by `start-dev`.  The volume starts empty rather than inheriting the host's plugins, so the first containerised session needs the one-off install above.  It is deliberately left alone by `remove-dev-full`, which is per-project — removing it there would wipe the plugins of every other containerised project sharing the Claude directory.

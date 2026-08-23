@@ -21,4 +21,4 @@ Work in small test-first iterations.  One trip through the loop should add one p
 ## Notes
 
 - A failing test means a code defect, not an infrastructure problem.
-- After the task's list is empty, do the after-task bookkeeping from `.claude/CLAUDE.md` (update `.claude/PROJECT.md` and `.claude/TASKS.md`, and delete `.claude/TESTS.local.md`).
+- After the task's list is empty, do the after-task bookkeeping from `.claude/CLAUDE.managed.md` (update `.claude/PROJECT.md` and `.claude/TASKS.md`, and delete `.claude/TESTS.local.md`).

@@ -5,7 +5,7 @@ description: Check markdown written during a task against the project's markdown
 
 # Markdown cleanup
 
-Run the markdown changed by the current task through the rules in `.claude/CLAUDE.md`.  Prose moves away from those rules while attention is on the work itself, so this is a deliberate pass at the end rather than something to trust to memory.
+Run the markdown changed by the current task through the rules in `.claude/CLAUDE.managed.md`.  Prose moves away from those rules while attention is on the work itself, so this is a deliberate pass at the end rather than something to trust to memory.
 
 ## Scope
 
@@ -17,7 +17,7 @@ Collect them with `git diff --name-only`, `git diff --cached --name-only` and `g
 
 Run each against the collected files.  Every hit is a candidate, not a confirmed problem — read the line before changing it.
 
-Two blanks between sentences:
+Two spaces between sentences:
 
     sed -E 's/^[[:space:]]*[0-9]+\.[[:space:]]//' FILE | grep -nE '[a-z0-9)`"]\. [A-Z]' | grep -vE '\b(e\.g|i\.e|etc|vs|cf)\. ' | grep -vE '^[0-9]+:(name|description):'
 
@@ -37,18 +37,20 @@ CLI commands split across lines, which breaks copy-paste:
 
 Idioms and figurative phrases, which the plain-English rule excludes:
 
-    grep -niE '\b(under the hood|out of the box|behind the scenes|rabbit hole|silver bullet|baked in|first-class|drop-in|gotcha|sanity check|on the fly|in the wild|heavy lifting|boils down to|moving parts|kick off|the trap|the catch|hand-rolled|glue|magic)\b' FILE
+    grep -niE '\b(under the hood|out of the box|behind the scenes|rabbit hole|silver bullet|baked in|first-class|drop-in|gotcha|sanity check|on the fly|in the wild|heavy lifting|boils down to|moving parts|kick off|the trap|the catch|hand-rolled|glue|magic)\b' FILE | grep -vE '^[0-9]+:[[:space:]]{4}'
 
-The wordlist holds the phrases that recur in this repo's prose.  It is a starting list, not a definition of the rule, so a clean result does not mean the file reads plainly.
+That alternation lists the phrases that recur in this repo's prose.  It is a starting list, not a definition of the rule, so a clean result does not mean the file reads plainly.  The `grep -v` drops lines indented as a code block, which hold commands rather than prose: without it this file reports its own wordlist, and any document quoting a command reports the single-word entries on that list whenever a flag or a package name contains one.
 
 ## Judgment checks
 
 No reliable pattern exists for these, so read the diff for them:
 
-- Prose is plain and direct: no idiom or figure of speech beyond the wordlist, no creative phrasing where a direct statement would do, and no wording a non-native speaker would have to decode
+- Prose is plain and direct: no idiom or figure of speech beyond the phrases the idiom grep lists, no creative phrasing where a direct statement would do, and no wording a non-native speaker would have to decode
+- Grammar is correct: subject and verb agree, articles are present, tenses are consistent, and singular and plural match across a sentence.  Nothing above tests this, so it is only found by reading
 - Lines are unbroken — a paragraph is one line, however long
 - No empty lines in the middle of a section
-- Detail sits at the right altitude: a one-line summary in `.claude/TASKS.md`, detail in `.claude/PROJECT.md` or its own `.claude/*.md`
+- Detail sits at the right altitude: a one-line statement of the work in `.claude/TASKS.md`, which holds pending work only, and detail in `.claude/PROJECT.md` or its own `.claude/*.md`
+- Nothing describes a past state: documentation says what is true now, and what changed and when stays in git history and `.claude/TASKS.md`.  A planned but not yet built part is a short separate note, not blended into the current-state description
 
 ## Finish
 
