@@ -7,5 +7,6 @@
 *.3mf
 *.gbr
 *.drl
+_autosave*
 dev/.arduino/
 dev/build/

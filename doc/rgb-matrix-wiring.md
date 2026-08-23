@@ -263,8 +263,8 @@ Three weaker reasons remain, and together they are enough:
 The circuit is low side, in the cell's negative lead.  P− becomes the node the rest of the board returns to.
 
     cell + ──┬── R1 330R ── VDD ──┬── C1 100nF ── VSS
-             └── P+                │
-                                   └── AP9101C
+             └── P+               │
+                                  └── AP9101C
     cell - ── Q1 source
     Q1 drain ── Q2 drain
     Q2 source ──┬── P-
