@@ -2,12 +2,17 @@
 - [ ] Cap the brightness at about 1.5 A of real draw, passing 4500 mA to `setMaxPowerInVoltsAndMilliamps`
 - [ ] Map the four panels to 16x16 coordinates, once the walk has revealed the chain order and rotations
 - [ ] Write the Allium spec for the three display modes, which `PROJECT.md` references but has never existed
-- [ ] Read the mode switch on D1 and select between sprite and map mode
+- [ ] Read the mode button on D1 with the internal pull-up, cycling sprite and map mode on the falling edge and starting in sprite mode
 - [ ] Fetch from the backend API over HTTP and plot the result on the fixed map
 - [ ] Add an ambient light sensor on A0 and dim the display after dark
 - [ ] Add a charge-from-USB circuit to the power supply PCB
 - [ ] Measure where these panels lose blue and green as the supply falls, by sweeping a bench supply from 4.2 V down
 - [ ] Design the power supply PCB around a single 18650 cell
+- [x] 2026-08-29: Choose the AON7407 for the panel load switch, on its 12.5 mΩ at −2.5 V of gate drive
+- [x] 2026-08-29: Soft-start the panel supply with a P-channel load switch, taking the inrush off the power switch contacts
+- [x] 2026-08-29: Make mode select a momentary push button on D1, debounced in hardware and using the internal pull-up
+- [x] 2026-08-29: Specify the power-only USB-C charging input with its two CC pulldowns
+- [x] 2026-08-29: Identify the fitted regulator as the AP130-33YR from its H9 marking
 - [x] 2026-08-09: Sweep the wiring doc for reasoning the brightness cap invalidated
 - [x] 2026-08-09: Correct the charging section, since blanking the panels leaves the idle floor and cannot reach the termination threshold
 - [x] 2026-08-09: Specify the cell protection circuit around the AP9101C and two AOB2146L MOSFETs

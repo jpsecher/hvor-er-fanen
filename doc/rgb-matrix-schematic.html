@@ -174,7 +174,7 @@
 
   <figure>
     <div class="sheet">
-      <svg class="schem" viewBox="0 0 1600 1320" role="img" aria-label="Schematic of the RGB matrix power supply board in four blocks: an 18650 cell with a 2 A time-lag fuse and an AP9101C protection controller driving two AOB2146L MOSFETs in the negative lead; an MCP73831 charger across the pack terminals; a lid-interlocked power switch and a separate signal-only mode switch, feeding an AP130-33 regulator; and four chained WS2812B panels with a NodeMCU, including an LDR divider on the A0 analog input.">
+      <svg class="schem" viewBox="0 0 1600 1440" role="img" aria-label="Schematic of the RGB matrix power supply board in four blocks: an 18650 cell with a 2 A time-lag fuse and an AP9101C protection controller driving two AOB2146L MOSFETs in the negative lead; an MCP73831 charger across the pack terminals, fed from a power-only USB-C receptacle with 5.1 kilohm pulldowns on both CC pins; the power path, where a lid-interlocked switch drives a soft-started P-channel load switch feeding four chained WS2812B panels; and the logic, where an AP130-33 regulator supplies a NodeMCU with a momentary mode button and an LDR divider on the A0 analog input.">
         <defs>
           <g id="gnd">
             <line x1="0" y1="0" x2="0" y2="12" class="wire"/>
@@ -195,6 +195,19 @@
             <line x1="-30" y1="-17" x2="-30" y2="17" class="wire"/>
             <line x1="-30" y1="0" x2="-54" y2="0" class="wire"/>
             <polygon points="-22,0 -11,-5 -11,5" class="dot"/>
+          </g>
+          <g id="pfet">
+            <line x1="0" y1="-40" x2="0" y2="-10" class="wire"/>
+            <line x1="0" y1="-10" x2="-22" y2="-10" class="wire"/>
+            <line x1="0" y1="0" x2="0" y2="40" class="wire"/>
+            <line x1="0" y1="10" x2="-22" y2="10" class="wire"/>
+            <line x1="0" y1="0" x2="-22" y2="0" class="wire"/>
+            <line x1="-22" y1="-17" x2="-22" y2="-6" class="wire"/>
+            <line x1="-22" y1="-4" x2="-22" y2="4" class="wire"/>
+            <line x1="-22" y1="6" x2="-22" y2="17" class="wire"/>
+            <line x1="-30" y1="-17" x2="-30" y2="17" class="wire"/>
+            <line x1="-30" y1="0" x2="-54" y2="0" class="wire"/>
+            <polygon points="-11,0 -22,-5 -22,5" class="dot"/>
           </g>
         </defs>
 
@@ -310,10 +323,28 @@
         <text x="62" y="740" class="lbl-blk">2 · CHARGE FROM USB</text>
 
         <rect x="80" y="800" width="110" height="80" rx="3" class="body-box"/>
-        <text x="135" y="832" class="ref" text-anchor="middle">J1</text>
-        <text x="135" y="852" class="lbl-s" text-anchor="middle">USB 5 V</text>
-        <line x1="190" y1="840" x2="700" y2="840" class="wire-hi"/>
-        <text x="360" y="832" class="lbl-s">VBUS</text>
+        <text x="135" y="830" class="ref" text-anchor="middle">J1</text>
+        <text x="135" y="850" class="lbl-s" text-anchor="middle">USB-C 5 V</text>
+        <text x="135" y="866" class="lbl-s" text-anchor="middle">power only</text>
+
+        <!-- R9, R10 CC pulldowns -->
+        <line x1="105" y1="880" x2="105" y2="912" class="wire"/>
+        <rect x="95" y="912" width="20" height="48" class="body-box"/>
+        <line x1="105" y1="960" x2="105" y2="972" class="wire"/>
+        <use href="#gnd" x="105" y="972"/>
+        <text x="99" y="898" class="lbl-pin" text-anchor="end">CC1</text>
+        <text x="88" y="932" class="ref" text-anchor="end">R9</text>
+        <text x="88" y="948" class="lbl-s" text-anchor="end">5.1 kΩ</text>
+
+        <line x1="165" y1="880" x2="165" y2="912" class="wire"/>
+        <rect x="155" y="912" width="20" height="48" class="body-box"/>
+        <line x1="165" y1="960" x2="165" y2="972" class="wire"/>
+        <use href="#gnd" x="165" y="972"/>
+        <text x="171" y="898" class="lbl-pin">CC2</text>
+        <text x="182" y="932" class="ref">R10</text>
+        <text x="182" y="948" class="lbl-s">5.1 kΩ</text>
+        <line x1="190" y1="840" x2="300" y2="840" class="wire"/>
+        <text x="215" y="832" class="lbl-s">VBUS</text>
 
         <!-- C4 input cap -->
         <circle cx="240" cy="840" r="4.5" class="dot"/>
@@ -335,7 +366,6 @@
         <text x="425" y="1022" class="lbl-s" text-anchor="middle">≈300 mA</text>
 
         <polyline points="330,910 300,910 300,840" class="wire"/>
-        <circle cx="300" cy="840" r="4.5" class="dot"/>
         <text x="338" y="906" class="lbl-pin">VDD</text>
 
         <polyline points="330,1030 290,1030 290,1090" class="wire"/>
@@ -374,199 +404,230 @@
         <text x="582" y="1068" class="ref">R3</text>
         <text x="582" y="1084" class="lbl-s">3.3 kΩ</text>
 
-        <!-- ============ BLOCK 3 — SWITCH AND REGULATOR ============ -->
+        <!-- ============ BLOCK 3 — POWER SWITCH AND MATRIX ============ -->
         <rect x="810" y="60" width="750" height="600" rx="4" class="frame"/>
-        <text x="832" y="100" class="lbl-blk">3 · SWITCHES AND 3.3 V REGULATOR</text>
+        <text x="832" y="100" class="lbl-blk">3 · POWER SWITCH AND MATRIX</text>
 
-        <rect x="826" y="186" width="66" height="28" rx="3" class="flag"/>
-        <text x="859" y="205" class="flag-t" text-anchor="middle">P+</text>
-        <line x1="892" y1="200" x2="960" y2="200" class="wire-hi"/>
+        <rect x="818" y="186" width="70" height="28" rx="3" class="flag"/>
+        <text x="853" y="205" class="flag-t" text-anchor="middle">P+</text>
+        <line x1="888" y1="200" x2="1040" y2="200" class="wire-hi"/>
 
-        <!-- SW1 power, interlocked with the charging-port lid -->
-        <rect x="900" y="118" width="300" height="30" rx="3" class="frame"/>
-        <text x="1050" y="138" class="lbl-s" text-anchor="middle">mechanically coupled to the charging-port lid</text>
-        <line x1="1005" y1="148" x2="1005" y2="180" class="frame"/>
-        <circle cx="960" cy="200" r="4.5" class="dot"/>
-        <line x1="965" y1="196" x2="1046" y2="176" class="wire-hi"/>
-        <circle cx="1050" cy="200" r="4.5" class="dot"/>
-        <line x1="1050" y1="200" x2="1200" y2="200" class="wire-hi"/>
-        <text x="1005" y="234" class="ref" text-anchor="middle">SW1</text>
-        <text x="1005" y="250" class="lbl-s" text-anchor="middle">power · SPST · 3 A</text>
-        <text x="1005" y="266" class="lbl-s" text-anchor="middle">off whenever the lid is open</text>
+        <!-- Q3 P-channel load switch, soft-started by C10 -->
+        <g transform="translate(1080,200) rotate(-90) scale(1,-1)"><use href="#pfet"/></g>
+        <text x="1080" y="134" class="ref" text-anchor="middle">Q3</text>
+        <text x="1080" y="152" class="lbl" text-anchor="middle">AON7407</text>
+        <text x="1080" y="168" class="lbl-s" text-anchor="middle">DFN 3×3 · soft-started load switch</text>
+        <text x="1036" y="186" class="lbl-pin" text-anchor="end">S</text>
+        <text x="1124" y="186" class="lbl-pin">D</text>
 
-        <!-- SW2 mode, signal only -->
-        <rect x="818" y="346" width="74" height="28" rx="3" class="flag-s"/>
-        <text x="855" y="365" class="flag-st" text-anchor="middle">MODE</text>
-        <line x1="892" y1="360" x2="960" y2="360" class="wire"/>
-        <circle cx="960" cy="360" r="4.5" class="dot"/>
-        <line x1="965" y1="356" x2="1046" y2="336" class="wire"/>
-        <circle cx="1050" cy="360" r="4.5" class="dot"/>
-        <polyline points="1050,360 1100,360 1100,410" class="wire"/>
-        <use href="#gnd" x="1100" y="410"/>
-        <text x="1005" y="394" class="ref" text-anchor="middle">SW2</text>
-        <text x="1005" y="410" class="lbl-s" text-anchor="middle">mode · SPST · signal only</text>
-        <text x="1005" y="426" class="lbl-s" text-anchor="middle">closed = D1 low</text>
+        <!-- gate node -->
+        <line x1="1080" y1="254" x2="1080" y2="300" class="wire"/>
+        <line x1="930" y1="300" x2="1080" y2="300" class="wire"/>
 
-        <!-- VSW rail -->
-        <line x1="1200" y1="200" x2="1490" y2="200" class="wire-hi"/>
-        <rect x="1494" y="186" width="66" height="28" rx="3" class="flag"/>
-        <text x="1527" y="205" class="flag-t" text-anchor="middle">VSW</text>
+        <!-- R11 holds the gate at the source -->
+        <circle cx="930" cy="200" r="4.5" class="dot"/>
+        <line x1="930" y1="200" x2="930" y2="240" class="wire"/>
+        <rect x="920" y="240" width="20" height="48" class="body-box"/>
+        <line x1="930" y1="288" x2="930" y2="300" class="wire"/>
+        <text x="912" y="258" class="ref" text-anchor="end">R11</text>
+        <text x="912" y="274" class="lbl-s" text-anchor="end">100 kΩ</text>
 
-        <!-- regulator input leg -->
-        <circle cx="1240" cy="200" r="4.5" class="dot"/>
-        <polyline points="1240,200 1240,380 1280,380" class="wire"/>
+        <!-- C10 sets the turn-on ramp -->
+        <circle cx="990" cy="200" r="4.5" class="dot"/>
+        <circle cx="990" cy="300" r="4.5" class="dot"/>
+        <line x1="990" y1="200" x2="990" y2="250" class="wire"/>
+        <line x1="974" y1="250" x2="1006" y2="250" class="wire"/>
+        <line x1="974" y1="266" x2="1006" y2="266" class="wire"/>
+        <line x1="990" y1="266" x2="990" y2="300" class="wire"/>
+        <text x="1014" y="256" class="ref">C10</text>
+        <text x="1014" y="272" class="lbl-s">1 µF</text>
 
-        <!-- C6 -->
-        <circle cx="1240" cy="290" r="4.5" class="dot"/>
-        <polyline points="1240,290 1210,290 1210,305" class="wire"/>
-        <line x1="1194" y1="305" x2="1226" y2="305" class="wire"/>
-        <line x1="1194" y1="321" x2="1226" y2="321" class="wire"/>
-        <line x1="1210" y1="321" x2="1210" y2="400" class="wire"/>
-        <use href="#gnd" x="1210" y="400"/>
-        <text x="1186" y="300" class="ref" text-anchor="end">C6</text>
-        <text x="1186" y="316" class="lbl-s" text-anchor="end">1 µF</text>
+        <!-- R12 and SW1 pull the gate down -->
+        <line x1="1080" y1="300" x2="1080" y2="340" class="wire"/>
+        <rect x="1070" y="340" width="20" height="48" class="body-box"/>
+        <line x1="1080" y1="388" x2="1080" y2="420" class="wire"/>
+        <text x="1052" y="358" class="ref" text-anchor="end">R12</text>
+        <text x="1052" y="374" class="lbl-s" text-anchor="end">10 kΩ</text>
+        <circle cx="1080" cy="420" r="4.5" class="dot"/>
+        <line x1="1084" y1="425" x2="1104" y2="506" class="wire"/>
+        <circle cx="1080" cy="510" r="4.5" class="dot"/>
+        <line x1="1080" y1="510" x2="1080" y2="545" class="wire"/>
+        <use href="#gnd" x="1080" y="545"/>
+        <rect x="828" y="428" width="220" height="30" rx="3" class="frame"/>
+        <text x="938" y="448" class="lbl-s" text-anchor="middle">coupled to the charging-port lid</text>
+        <line x1="1048" y1="443" x2="1070" y2="443" class="frame"/>
+        <text x="1048" y="482" class="ref" text-anchor="end">SW1</text>
+        <text x="1048" y="498" class="lbl-s" text-anchor="end">power · gate only · ≈38 µA</text>
+        <text x="1048" y="514" class="lbl-s" text-anchor="end">off whenever the lid is open</text>
 
-        <!-- U3 AP130 -->
-        <rect x="1280" y="340" width="170" height="80" rx="3" class="body-box"/>
-        <text x="1365" y="370" class="ref" text-anchor="middle">U3</text>
-        <text x="1365" y="390" class="lbl" text-anchor="middle">AP130-33YR</text>
-        <text x="1365" y="408" class="lbl-s" text-anchor="middle">SOT-89-3 · marked H9</text>
-        <text x="1288" y="360" class="lbl-pin">2 IN</text>
-        <text x="1442" y="360" class="lbl-pin" text-anchor="end">OUT 3</text>
-        <text x="1378" y="440" class="lbl-pin">1 GND</text>
-        <polyline points="1365,420 1365,470" class="wire"/>
-        <use href="#gnd" x="1365" y="470"/>
+        <!-- VSW rail out of the load switch -->
+        <line x1="1120" y1="200" x2="1490" y2="200" class="wire-hi"/>
+        <rect x="1490" y="186" width="70" height="28" rx="3" class="flag"/>
+        <text x="1525" y="205" class="flag-t" text-anchor="middle">VSW</text>
 
-        <!-- 3V3 rail -->
-        <polyline points="1450,380 1500,380 1500,500 1290,500" class="wire"/>
-        <rect x="1216" y="486" width="70" height="28" rx="3" class="flag-s"/>
-        <text x="1251" y="505" class="flag-st" text-anchor="middle">+3V3</text>
+        <!-- C3 at the panel input -->
+        <circle cx="1230" cy="200" r="4.5" class="dot"/>
+        <line x1="1230" y1="200" x2="1230" y2="250" class="wire"/>
+        <line x1="1214" y1="250" x2="1246" y2="250" class="wire"/>
+        <line x1="1214" y1="266" x2="1246" y2="266" class="wire"/>
+        <line x1="1230" y1="266" x2="1230" y2="320" class="wire"/>
+        <use href="#gnd" x="1230" y="320"/>
+        <text x="1254" y="256" class="ref">C3</text>
+        <text x="1254" y="272" class="lbl-s">1000 µF</text>
 
-        <!-- C7 -->
-        <circle cx="1440" cy="500" r="4.5" class="dot"/>
-        <line x1="1440" y1="500" x2="1440" y2="530" class="wire"/>
-        <line x1="1424" y1="530" x2="1456" y2="530" class="wire"/>
-        <line x1="1424" y1="546" x2="1456" y2="546" class="wire"/>
-        <line x1="1440" y1="546" x2="1440" y2="580" class="wire"/>
-        <use href="#gnd" x="1440" y="580"/>
-        <text x="1464" y="526" class="ref">C7</text>
-        <text x="1464" y="542" class="lbl-s">10 µF</text>
-
-        <!-- C8 -->
-        <circle cx="1340" cy="500" r="4.5" class="dot"/>
-        <line x1="1340" y1="500" x2="1340" y2="530" class="wire"/>
-        <line x1="1324" y1="530" x2="1356" y2="530" class="wire"/>
-        <line x1="1324" y1="546" x2="1356" y2="546" class="wire"/>
-        <line x1="1340" y1="546" x2="1340" y2="580" class="wire"/>
-        <use href="#gnd" x="1340" y="580"/>
-        <text x="1316" y="526" class="ref" text-anchor="end">C8</text>
-        <text x="1316" y="542" class="lbl-s" text-anchor="end">1000 µF</text>
-        <text x="1316" y="558" class="lbl-s" text-anchor="end">fit position</text>
-
-        <!-- ============ BLOCK 4 — DISPLAY AND MCU ============ -->
-        <rect x="810" y="700" width="750" height="580" rx="4" class="frame"/>
-        <text x="832" y="740" class="lbl-blk">4 · DISPLAY AND MCU</text>
-
-        <rect x="800" y="806" width="70" height="28" rx="3" class="flag"/>
-        <text x="835" y="825" class="flag-t" text-anchor="middle">VSW</text>
-        <line x1="870" y1="820" x2="1540" y2="820" class="wire-hi"/>
-
-        <rect x="800" y="896" width="70" height="28" rx="3" class="flag-s"/>
-        <text x="835" y="915" class="flag-st" text-anchor="middle">+3V3</text>
-        <line x1="870" y1="910" x2="940" y2="910" class="wire"/>
-
-        <rect x="800" y="976" width="70" height="28" rx="3" class="flag-s"/>
-        <text x="835" y="995" class="flag-st" text-anchor="middle">MODE</text>
-        <line x1="870" y1="990" x2="940" y2="990" class="wire"/>
-
-        <!-- R5 pull-up -->
-        <circle cx="900" cy="910" r="4.5" class="dot"/>
-        <line x1="900" y1="910" x2="900" y2="925" class="wire"/>
-        <rect x="890" y="925" width="20" height="50" class="body-box"/>
-        <line x1="900" y1="975" x2="900" y2="990" class="wire"/>
-        <circle cx="900" cy="990" r="4.5" class="dot"/>
-        <text x="882" y="944" class="ref" text-anchor="end">R5</text>
-        <text x="882" y="960" class="lbl-s" text-anchor="end">10 kΩ</text>
-
-        <!-- NodeMCU -->
-        <rect x="940" y="870" width="200" height="230" rx="3" class="body-box"/>
-        <text x="1040" y="906" class="ref" text-anchor="middle">A1</text>
-        <text x="1040" y="926" class="lbl" text-anchor="middle">NodeMCU 1.0</text>
-        <text x="1040" y="946" class="lbl-s" text-anchor="middle">ESP8266</text>
-        <text x="948" y="906" class="lbl-pin">3V3</text>
-        <text x="948" y="986" class="lbl-pin">D1</text>
-        <text x="1132" y="946" class="lbl-pin" text-anchor="end">D2</text>
-        <text x="1074" y="1092" class="lbl-pin">GND</text>
-        <text x="964" y="1092" class="lbl-pin">A0</text>
-        <polyline points="1040,1100 1040,1130" class="wire"/>
-        <use href="#gnd" x="1040" y="1130"/>
-
-        <!-- ambient light divider on A0 -->
-        <rect x="800" y="1046" width="70" height="28" rx="3" class="flag-s"/>
-        <text x="835" y="1065" class="flag-st" text-anchor="middle">+3V3</text>
-        <polyline points="870,1060 890,1060 890,1075" class="wire"/>
-        <rect x="880" y="1075" width="20" height="50" class="body-box"/>
-        <line x1="890" y1="1125" x2="890" y2="1145" class="wire"/>
-        <line x1="840" y1="1130" x2="862" y2="1114" class="wire"/>
-        <polygon points="868,1110 863,1119 858,1112" class="dot"/>
-        <line x1="840" y1="1112" x2="862" y2="1096" class="wire"/>
-        <polygon points="868,1092 863,1101 858,1094" class="dot"/>
-        <text x="912" y="1094" class="ref">R7</text>
-        <text x="912" y="1110" class="lbl-s">LDR</text>
-        <text x="912" y="1126" class="lbl-s">CdS, on top</text>
-
-        <circle cx="890" cy="1145" r="4.5" class="dot"/>
-        <polyline points="890,1145 980,1145 980,1100" class="wire"/>
-        <text x="936" y="1138" class="lbl-s" text-anchor="middle">LIGHT</text>
-
-        <line x1="890" y1="1145" x2="890" y2="1165" class="wire"/>
-        <rect x="880" y="1165" width="20" height="50" class="body-box"/>
-        <line x1="890" y1="1215" x2="890" y2="1230" class="wire"/>
-        <use href="#gnd" x="890" y="1230"/>
-        <text x="912" y="1186" class="ref">R8</text>
-        <text x="912" y="1202" class="lbl-s">100 kΩ</text>
-        <text x="912" y="1218" class="lbl-s">size after measuring</text>
-
-        <!-- D2 through R6 to DIN -->
-        <line x1="1140" y1="950" x2="1166" y2="950" class="wire"/>
-        <rect x="1166" y="940" width="50" height="20" class="body-box"/>
-        <line x1="1216" y1="950" x2="1260" y2="950" class="wire"/>
-        <text x="1191" y="928" class="ref" text-anchor="middle">R6</text>
-        <text x="1191" y="982" class="lbl-s" text-anchor="middle">470 Ω</text>
+        <!-- DATA in, through R6 to DIN -->
+        <rect x="1130" y="446" width="70" height="28" rx="3" class="flag-s"/>
+        <text x="1165" y="465" class="flag-st" text-anchor="middle">DATA</text>
+        <line x1="1200" y1="460" x2="1226" y2="460" class="wire"/>
+        <rect x="1226" y="450" width="50" height="20" class="body-box"/>
+        <line x1="1276" y1="460" x2="1300" y2="460" class="wire"/>
+        <text x="1251" y="440" class="ref" text-anchor="middle">R6</text>
+        <text x="1251" y="492" class="lbl-s" text-anchor="middle">470 Ω</text>
 
         <!-- panels -->
-        <rect x="1260" y="870" width="220" height="180" rx="3" class="body-box"/>
-        <text x="1375" y="900" class="ref" text-anchor="middle">DP1–DP4</text>
-        <rect x="1280" y="920" width="40" height="40" rx="2" class="body-box"/>
-        <rect x="1332" y="920" width="40" height="40" rx="2" class="body-box"/>
-        <rect x="1384" y="920" width="40" height="40" rx="2" class="body-box"/>
-        <rect x="1436" y="920" width="40" height="40" rx="2" class="body-box"/>
-        <line x1="1320" y1="940" x2="1332" y2="940" class="wire"/>
-        <line x1="1372" y1="940" x2="1384" y2="940" class="wire"/>
-        <line x1="1424" y1="940" x2="1436" y2="940" class="wire"/>
-        <text x="1375" y="1000" class="lbl-s" text-anchor="middle">4 × 8×8 WS2812B</text>
-        <text x="1375" y="1018" class="lbl-s" text-anchor="middle">chained DOUT → DIN, 256 px</text>
-        <text x="1268" y="940" class="lbl-pin">DIN</text>
+        <rect x="1300" y="380" width="220" height="180" rx="3" class="body-box"/>
+        <text x="1410" y="410" class="ref" text-anchor="middle">DP1–DP4</text>
+        <rect x="1320" y="430" width="40" height="40" rx="2" class="body-box"/>
+        <rect x="1372" y="430" width="40" height="40" rx="2" class="body-box"/>
+        <rect x="1424" y="430" width="40" height="40" rx="2" class="body-box"/>
+        <rect x="1476" y="430" width="40" height="40" rx="2" class="body-box"/>
+        <line x1="1360" y1="450" x2="1372" y2="450" class="wire"/>
+        <line x1="1412" y1="450" x2="1424" y2="450" class="wire"/>
+        <line x1="1464" y1="450" x2="1476" y2="450" class="wire"/>
+        <text x="1410" y="510" class="lbl-s" text-anchor="middle">4 × 8×8 WS2812B</text>
+        <text x="1410" y="528" class="lbl-s" text-anchor="middle">chained DOUT → DIN, 256 px</text>
+        <text x="1308" y="450" class="lbl-pin">DIN</text>
 
-        <line x1="1320" y1="870" x2="1320" y2="820" class="wire-hi"/>
-        <circle cx="1320" cy="820" r="4.5" class="dot"/>
-        <text x="1330" y="860" class="lbl-pin">5V</text>
-        <line x1="1320" y1="1050" x2="1320" y2="1100" class="wire-hi"/>
-        <use href="#gnd" x="1320" y="1100"/>
-        <text x="1330" y="1068" class="lbl-pin">GND</text>
+        <circle cx="1360" cy="200" r="4.5" class="dot"/>
+        <line x1="1360" y1="200" x2="1360" y2="380" class="wire-hi"/>
+        <text x="1370" y="370" class="lbl-pin">5V</text>
+        <line x1="1360" y1="560" x2="1360" y2="600" class="wire-hi"/>
+        <use href="#gnd" x="1360" y="600"/>
+        <text x="1370" y="578" class="lbl-pin">GND</text>
 
-        <!-- C3 -->
-        <circle cx="1530" cy="820" r="4.5" class="dot"/>
-        <line x1="1530" y1="820" x2="1530" y2="870" class="wire"/>
-        <line x1="1514" y1="870" x2="1546" y2="870" class="wire"/>
-        <line x1="1514" y1="886" x2="1546" y2="886" class="wire"/>
-        <line x1="1530" y1="886" x2="1530" y2="960" class="wire"/>
-        <use href="#gnd" x="1530" y="960"/>
-        <text x="1530" y="916" class="ref" text-anchor="middle">C3</text>
-        <text x="1530" y="932" class="lbl-s" text-anchor="middle">1000 µF</text>
+        <!-- ============ BLOCK 4 — MCU, MODE AND 3.3 V REGULATOR ============ -->
+        <rect x="810" y="700" width="750" height="700" rx="4" class="frame"/>
+        <text x="832" y="740" class="lbl-blk">4 · MCU, MODE AND 3.3 V REGULATOR</text>
+
+        <!-- regulator row -->
+        <rect x="818" y="776" width="70" height="28" rx="3" class="flag"/>
+        <text x="853" y="795" class="flag-t" text-anchor="middle">VSW</text>
+        <line x1="888" y1="790" x2="1050" y2="790" class="wire-hi"/>
+
+        <circle cx="960" cy="790" r="4.5" class="dot"/>
+        <line x1="960" y1="790" x2="960" y2="820" class="wire"/>
+        <line x1="944" y1="820" x2="976" y2="820" class="wire"/>
+        <line x1="944" y1="836" x2="976" y2="836" class="wire"/>
+        <line x1="960" y1="836" x2="960" y2="870" class="wire"/>
+        <use href="#gnd" x="960" y="870"/>
+        <text x="936" y="826" class="ref" text-anchor="end">C6</text>
+        <text x="936" y="842" class="lbl-s" text-anchor="end">1 µF</text>
+
+        <rect x="1050" y="750" width="170" height="80" rx="3" class="body-box"/>
+        <text x="1135" y="780" class="ref" text-anchor="middle">U3</text>
+        <text x="1135" y="800" class="lbl" text-anchor="middle">AP130-33YR</text>
+        <text x="1135" y="818" class="lbl-s" text-anchor="middle">SOT-89-3 · marked H9</text>
+        <text x="1058" y="786" class="lbl-pin">2 IN</text>
+        <text x="1212" y="786" class="lbl-pin" text-anchor="end">OUT 3</text>
+        <text x="1148" y="850" class="lbl-pin">1 GND</text>
+        <line x1="1135" y1="830" x2="1135" y2="870" class="wire"/>
+        <use href="#gnd" x="1135" y="870"/>
+
+        <line x1="1220" y1="790" x2="1420" y2="790" class="wire"/>
+        <rect x="1420" y="776" width="70" height="28" rx="3" class="flag-s"/>
+        <text x="1455" y="795" class="flag-st" text-anchor="middle">+3V3</text>
+
+        <circle cx="1280" cy="790" r="4.5" class="dot"/>
+        <line x1="1280" y1="790" x2="1280" y2="820" class="wire"/>
+        <line x1="1264" y1="820" x2="1296" y2="820" class="wire"/>
+        <line x1="1264" y1="836" x2="1296" y2="836" class="wire"/>
+        <line x1="1280" y1="836" x2="1280" y2="870" class="wire"/>
+        <use href="#gnd" x="1280" y="870"/>
+        <text x="1256" y="826" class="ref" text-anchor="end">C7</text>
+        <text x="1256" y="842" class="lbl-s" text-anchor="end">10 µF</text>
+
+        <circle cx="1380" cy="790" r="4.5" class="dot"/>
+        <line x1="1380" y1="790" x2="1380" y2="820" class="wire"/>
+        <line x1="1364" y1="820" x2="1396" y2="820" class="wire"/>
+        <line x1="1364" y1="836" x2="1396" y2="836" class="wire"/>
+        <line x1="1380" y1="836" x2="1380" y2="870" class="wire"/>
+        <use href="#gnd" x="1380" y="870"/>
+        <text x="1404" y="826" class="ref">C8</text>
+        <text x="1404" y="842" class="lbl-s">1000 µF</text>
+        <text x="1404" y="858" class="lbl-s">fit position</text>
+
+        <!-- MCU row -->
+        <rect x="818" y="972" width="70" height="28" rx="3" class="flag-s"/>
+        <text x="853" y="991" class="flag-st" text-anchor="middle">+3V3</text>
+        <line x1="888" y1="986" x2="1020" y2="986" class="wire"/>
+
+        <rect x="818" y="1016" width="70" height="28" rx="3" class="flag-s"/>
+        <text x="853" y="1035" class="flag-st" text-anchor="middle">DATA</text>
+        <line x1="888" y1="1030" x2="1020" y2="1030" class="wire"/>
+
+        <rect x="1020" y="950" width="200" height="230" rx="3" class="body-box"/>
+        <text x="1120" y="986" class="ref" text-anchor="middle">A1</text>
+        <text x="1120" y="1006" class="lbl" text-anchor="middle">NodeMCU 1.0</text>
+        <text x="1120" y="1026" class="lbl-s" text-anchor="middle">ESP8266</text>
+        <text x="1028" y="982" class="lbl-pin">3V3</text>
+        <text x="1028" y="1026" class="lbl-pin">D2</text>
+        <text x="1028" y="1142" class="lbl-pin">A0</text>
+        <text x="1212" y="1098" class="lbl-pin" text-anchor="end">D1</text>
+        <text x="1150" y="1172" class="lbl-pin">GND</text>
+        <line x1="1120" y1="1180" x2="1120" y2="1210" class="wire"/>
+        <use href="#gnd" x="1120" y="1210"/>
+
+        <!-- ambient light divider on A0 -->
+        <rect x="818" y="1132" width="70" height="28" rx="3" class="flag-s"/>
+        <text x="853" y="1151" class="flag-st" text-anchor="middle">+3V3</text>
+        <polyline points="888,1146 915,1146 915,1176" class="wire"/>
+        <rect x="905" y="1176" width="20" height="50" class="body-box"/>
+        <line x1="855" y1="1230" x2="877" y2="1214" class="wire"/>
+        <polygon points="883,1210 878,1219 873,1212" class="dot"/>
+        <line x1="855" y1="1212" x2="877" y2="1196" class="wire"/>
+        <polygon points="883,1192 878,1201 873,1194" class="dot"/>
+        <text x="935" y="1196" class="ref">R7</text>
+        <text x="935" y="1212" class="lbl-s">LDR</text>
+        <text x="935" y="1228" class="lbl-s">CdS</text>
+
+        <line x1="915" y1="1226" x2="915" y2="1246" class="wire"/>
+        <circle cx="915" cy="1246" r="4.5" class="dot"/>
+        <polyline points="915,1246 980,1246 980,1146 1020,1146" class="wire"/>
+        <text x="948" y="1239" class="lbl-s" text-anchor="middle">LIGHT</text>
+
+        <line x1="915" y1="1246" x2="915" y2="1276" class="wire"/>
+        <rect x="905" y="1276" width="20" height="50" class="body-box"/>
+        <line x1="915" y1="1326" x2="915" y2="1346" class="wire"/>
+        <use href="#gnd" x="915" y="1346"/>
+        <text x="935" y="1296" class="ref">R8</text>
+        <text x="935" y="1312" class="lbl-s">100 kΩ</text>
+        <text x="935" y="1328" class="lbl-s">size after measuring</text>
+
+        <!-- mode button, wired straight to D1 -->
+        <polyline points="1220,1102 1300,1102 1300,1240" class="wire"/>
+        <line x1="1180" y1="1240" x2="1300" y2="1240" class="wire"/>
+        <text x="1240" y="1233" class="lbl-s" text-anchor="middle">MODE</text>
+
+        <circle cx="1180" cy="1240" r="4.5" class="dot"/>
+        <line x1="1180" y1="1240" x2="1180" y2="1270" class="wire"/>
+        <line x1="1164" y1="1270" x2="1196" y2="1270" class="wire"/>
+        <line x1="1164" y1="1286" x2="1196" y2="1286" class="wire"/>
+        <line x1="1180" y1="1286" x2="1180" y2="1350" class="wire"/>
+        <use href="#gnd" x="1180" y="1350"/>
+        <text x="1156" y="1276" class="ref" text-anchor="end">C9</text>
+        <text x="1156" y="1292" class="lbl-s" text-anchor="end">100 nF</text>
+
+        <circle cx="1300" cy="1240" r="4.5" class="dot"/>
+        <line x1="1304" y1="1245" x2="1324" y2="1316" class="wire"/>
+        <circle cx="1300" cy="1320" r="4.5" class="dot"/>
+        <line x1="1300" y1="1320" x2="1300" y2="1350" class="wire"/>
+        <use href="#gnd" x="1300" y="1350"/>
+        <text x="1340" y="1266" class="ref">SW2</text>
+        <text x="1340" y="1282" class="lbl-s">mode · momentary</text>
+        <text x="1340" y="1298" class="lbl-s">pressed = D1 low</text>
       </svg>
     </div>
-    <figcaption>Four blocks on one sheet. Nets that leave a block carry a tag rather than a wire: <strong>P+</strong> is the cell positive and pack positive, <strong>VSW</strong> is the same rail after the mode switch, <strong>P−</strong> is the pack negative and the star ground, and every ground symbol on the sheet is that one node. Thick amber wires carry cell current and want thick copper; thin wires are signal or milliamps.</figcaption>
+    <figcaption>Four blocks on one sheet, split so that blocks 1 to 3 carry the power path and block 4 holds everything at 3.3 V and below. Nets that leave a block carry a tag rather than a wire: <strong>P+</strong> is the cell positive and pack positive, <strong>VSW</strong> is the same rail after the Q3 load switch, <strong>DATA</strong> is the pixel line from D2 to the first panel, and <strong>P−</strong> is the pack negative and the star ground, which every ground symbol on the sheet denotes. <strong>+3V3</strong> is a tag too, but stays inside block 4; the mode button wires straight to D1. Thick amber wires carry cell current and want thick copper; thin wires are signal or milliamps.</figcaption>
   </figure>
 
   <div class="legend">
@@ -585,13 +646,13 @@
           <tr><th>Net</th><th>Runs between</th><th>Note</th></tr>
         </thead>
         <tbody>
-          <tr><td>P+</td><td>F1, R1 to U2 VDD, U1 VBAT, SW1</td><td>Protection is low side only, so the pack positive is the cell positive behind the fuse. U2 stays powered with SW1 open, at 3 µA.</td></tr>
+          <tr><td>P+</td><td>F1, R1 to U2 VDD, U1 VBAT, Q3 source, R11, C10</td><td>Protection is low side only, so the pack positive is the cell positive behind the fuse. U2 stays powered with SW1 open, at 3 µA.</td></tr>
           <tr><td>CELL+</td><td>BT1 positive, F1</td><td>The only node ahead of the fuse. Keep it to the length of the holder tab.</td></tr>
           <tr><td>CELL−</td><td>BT1 negative, Q1 source, U2 VSS, C1</td><td>Inside the protection loop. Nothing else on the board returns here.</td></tr>
           <tr><td>P−</td><td>Q2 source, U2 VM through R2, U1 VSS, U3 GND, panel GND, A1 GND, R8</td><td>The star point. Panel and MCU returns arrive separately, never sharing a trace.</td></tr>
-          <tr><td>VSW</td><td>SW1, panel 5V, C3, U3 IN, C6</td><td>Cell voltage after the power switch, 4.2 V down to 3.2 V. No converter.</td></tr>
-          <tr><td>+3V3</td><td>U3 OUT, C7, C8, R5, A1 3V3 pin</td><td>Feeds the NodeMCU 3V3 pin directly, bypassing its onboard AMS1117.</td></tr>
-          <tr><td>MODE</td><td>SW2, R5, A1 D1 (GPIO5)</td><td>Grounded when SW2 is closed, pulled high when open. Carries no power, so it can be polled at runtime and mode changes need no reboot.</td></tr>
+          <tr><td>VSW</td><td>Q3 drain, panel 5V, C3, U3 IN, C6</td><td>Cell voltage after the load switch, 4.2 V down to 3.2 V. No converter. Ramps up over about 10 ms at switch-on.</td></tr>
+          <tr><td>+3V3</td><td>U3 OUT, C7, C8, A1 3V3 pin</td><td>Feeds the NodeMCU 3V3 pin directly, bypassing its onboard AMS1117.</td></tr>
+          <tr><td>MODE</td><td>SW2, C9, A1 D1 (GPIO5)</td><td>Grounded while SW2 is pressed, pulled high otherwise, with C9 debouncing it. Carries no power, so it can be polled at runtime and mode changes need no reboot.</td></tr>
           <tr><td>DATA</td><td>A1 D2 (GPIO4), R6, DP1 DIN</td><td>3.3 V drive against a 0.7 × VDD threshold. Works over the whole cell range with no level shifter.</td></tr>
           <tr><td>LIGHT</td><td>R7 and R8 junction, A1 A0</td><td>Ambient light divider, fed from +3V3 rather than VSW so the reading does not move with cell voltage.</td></tr>
           <tr><td>VBUS</td><td>J1, U1 VDD, C4</td><td>Present only while charging.</td></tr>
@@ -613,23 +674,28 @@
           <tr><td>U2</td><td>AP9101CAK6-ANTRG1</td><td>—</td><td>SOT26</td><td>Marked GSU. Pins 1 DO, 2 VM, 3 CO, 4 NC, 5 VDD, 6 VSS.</td></tr>
           <tr><td>U3</td><td>AP130-33YR</td><td>3.3 V, 300 mA</td><td>SOT-89-3</td><td>Marked H9. Pins 1 GND, 2 IN, 3 OUT. A part marked CS has a different order.</td></tr>
           <tr><td>Q1, Q2</td><td>AOB2146L</td><td>40 V, 105 A</td><td>TO-263</td><td>N-channel, common drain, sharing one copper pour.</td></tr>
+          <tr><td>Q3</td><td>AON7407</td><td>20 V, &lt;12.5 mΩ at V<sub>GS</sub> = −2.5 V</td><td>DFN 3×3</td><td>Panel load switch. 19 mV at the 1.5 A worst frame. Exposed pad, so it needs reflow rather than an iron.</td></tr>
           <tr><td>R1</td><td>Resistor</td><td>330 Ω</td><td>—</td><td>U2 supply. Datasheet allows 330 to 470 Ω.</td></tr>
           <tr><td>R2</td><td>Resistor</td><td>2.7 kΩ</td><td>—</td><td>VM sense. Datasheet allows 300 Ω to 4 kΩ; above 4 kΩ, CO may not turn Q2 off.</td></tr>
           <tr><td>R3</td><td>Resistor</td><td>3.3 kΩ</td><td>—</td><td>Sets charge current, I = 1000 / R, so about 300 mA.</td></tr>
-          <tr><td>R5</td><td>Resistor</td><td>10 kΩ</td><td>—</td><td>Mode pull-up. The ESP8266 internal pull-up can do this instead.</td></tr>
           <tr><td>R6</td><td>Resistor</td><td>470 Ω</td><td>—</td><td>In series with DIN, placed close to the first panel.</td></tr>
           <tr><td>R7</td><td>CdS photoresistor</td><td>≈15 kΩ lit, ≈1 MΩ dark</td><td>5 mm disc</td><td>On the top leg of the divider. Measure yours — part spread is wide and they are unmarked.</td></tr>
           <tr><td>R8</td><td>Resistor</td><td>100 kΩ</td><td>—</td><td>Provisional. Set it near the geometric mean of your own lit and dark readings.</td></tr>
+          <tr><td>R11</td><td>Resistor</td><td>100 kΩ</td><td>—</td><td>Q3 gate to source, holding it off. Also sets the 100 ms turn-off.</td></tr>
+          <tr><td>R12</td><td>Resistor</td><td>10 kΩ</td><td>—</td><td>Q3 gate to SW1. With R11 it sets the gate drive at 0.909 of the cell.</td></tr>
           <tr><td>C1</td><td>Ceramic</td><td>100 nF</td><td>—</td><td>U2 supply decoupling, 10 nF to 1 µF allowed.</td></tr>
+          <tr><td>C9</td><td>Ceramic</td><td>100 nF</td><td>—</td><td>Across SW2, debouncing it in hardware so no firmware debounce is needed.</td></tr>
+          <tr><td>C10</td><td>Ceramic</td><td>1 µF</td><td>—</td><td>Q3 gate to source. Sets the 9.1 ms turn-on ramp that soft-starts the panel supply.</td></tr>
           <tr><td>C3</td><td>Electrolytic</td><td>1000 µF</td><td>—</td><td>At the panel input. Absorbs inrush and pixel-change current steps.</td></tr>
           <tr><td>C4, C5</td><td>Ceramic</td><td>4.7 µF</td><td>—</td><td>Charger input and VBAT.</td></tr>
           <tr><td>C6</td><td>Ceramic</td><td>1 µF</td><td>—</td><td>Regulator input.</td></tr>
           <tr><td>C7</td><td>Ceramic</td><td>10 µF</td><td>—</td><td>Regulator output. Required for stability whatever else is on the rail.</td></tr>
           <tr><td>C8</td><td>Electrolytic</td><td>1000 µF</td><td>—</td><td>Beside the ESP8266. Leave the footprint even if unpopulated while the radio is off.</td></tr>
           <tr><td>F1</td><td>Fuse, time-lag</td><td>2 A</td><td>holder or clips</td><td>Backstop for a MOSFET failing short. Must be slow-blow — see the note below.</td></tr>
-          <tr><td>SW1</td><td>Power switch</td><td>3 A</td><td>SPST</td><td>Carries cell current. Coupled to the charging-port lid so it is off whenever the lid is open.</td></tr>
-          <tr><td>SW2</td><td>Mode switch</td><td>signal</td><td>SPST</td><td>Any small slide switch. Grounds D1 in one position and leaves the pull-up to it in the other.</td></tr>
-          <tr><td>J1</td><td>USB connector</td><td>5 V</td><td>—</td><td>Keep separate from the NodeMCU flashing port.</td></tr>
+          <tr><td>SW1</td><td>Power switch</td><td>≈38 µA</td><td>SPST</td><td>Drives the Q3 gate, not the load, so its rating is not a constraint. Coupled to the charging-port lid so it is off whenever the lid is open.</td></tr>
+          <tr><td>SW2</td><td>Mode button</td><td>signal</td><td>momentary</td><td>Grounds D1 while pressed. Each press cycles sprites and map; the display starts in sprites at every power-on.</td></tr>
+          <tr><td>J1</td><td>USB-C receptacle, power only</td><td>5 V</td><td>6-pin</td><td>VBUS, GND, CC1 and CC2 only. No D+ or D−, so it cannot flash the board. Keep separate from the NodeMCU flashing port.</td></tr>
+          <tr><td>R9, R10</td><td>Resistor</td><td>5.1 kΩ</td><td>—</td><td>CC1 and CC2 pulldowns. Two separate resistors, not one shared — see the note below.</td></tr>
           <tr><td>A1</td><td>NodeMCU 1.0</td><td>—</td><td>module</td><td>Fed on its 3V3 pin.</td></tr>
           <tr><td>DP1–DP4</td><td>WS2812B panel</td><td>8×8</td><td>—</td><td>Chained into one run of 256 pixels.</td></tr>
         </tbody>
@@ -643,12 +709,16 @@
       <p><strong>The lid is what makes charging work, so the interlock is a functional part and not a convenience.</strong> Termination is 7.5% of the programmed current, which is 22.5 mA, and a blank display already draws 244 to 294 mA from the same node. With the display powered the cycle never completes, and at sprite brightness the cell discharges while nominally charging — silently, because no firmware can read STAT. Blanking the panels in software does not help either, since the 224 mA floor is 256 always-running controllers. SW1 has to be open, and coupling it to the lid is what guarantees that.</p>
     </div>
     <ul>
-      <li><strong>F1 must be time-lag, and it must stay slower than the electronic trip.</strong> It exists for one fault the AP9101C cannot see — a MOSFET failing drain-to-source, which leaves the protection silently gone. Everything else is already caught faster and resettably, so the fuse must never act first. Two numbers bound it: the 1000 µF through about 50 mΩ gives an 84 A peak with a 50 µs time constant, so each switch-on is I² t = 84² × 25 µs ≈ 0.18 A²s, and repeated pulses accumulate — want a melting I² t of at least 0.9 A²s. A 2 A fast-blow sits in the same order as the inrush and will fatigue open; a 2 A time-lag is typically an order of magnitude above it. Put it on clips rather than soldered, and keep the cell-side track no longer than the holder tab.</li>
+      <li><strong>F1 must be time-lag, and it must stay slower than the electronic trip.</strong> It exists for one fault the AP9101C cannot see — a MOSFET failing drain-to-source, which leaves the protection silently gone. Everything else is already caught faster and resettably, so the fuse must never act first. Without soft-start the bound came from inrush: 1000 µF through about 50 mΩ gives an 84 A peak, so each switch-on was I² t ≈ 0.18 A²s and repeated pulses accumulated, wanting a melting I² t of at least 0.9 A²s. Q3 removes that, cutting each switch-on to a few thousandths of an A²s, so the fuse is now sized only against the fault it exists for. Keep it time-lag regardless: a 2 A fast-blow sits close to normal operating transients and will fatigue open. Put it on clips rather than soldered, and keep the cell-side track no longer than the holder tab.</li>
       <li><strong>Star ground at P−.</strong> The panel return and the NodeMCU return each reach P− on their own path. Panel current swings by more than an ampere as pixels change, and if the ESP sits downstream of that, its ground reference moves with the picture — and the DIN threshold is measured against exactly that reference.</li>
       <li><strong>Pour thick copper on both sides of the cell path:</strong> cell positive through SW1 to the panels, and panel ground through P− and the two MOSFETs back to the cell negative. The regulator branch is a few hundred milliamps and needs nothing special.</li>
       <li><strong>Both MOSFET tabs are the same node.</strong> TO-263 tabs are the drain and the two drains are common here, so they share one pour with no isolation between them. Dissipation is 36 mW across the pair, so the pour is for soldering rather than cooling.</li>
+      <li><strong>The mode input has no pull-up resistor; the pin provides its own.</strong> <code>pinMode(D1, INPUT_PULLUP)</code> is what holds it high, and with C9 that gives a debounce time constant of 3 to 10 ms — the internal pull-up is roughly 45 kΩ but loosely specified. Tactile bounce is commonly 1 to 5 ms, so there is margin, and the slower release edge is imperceptible. The internal pull-up exists only once <code>pinMode</code> has run, so the pin floats through boot, which is harmless on a pin that is not a strapping pin.</li>
+      <li><strong>The mode button is not tied to D1, but it cannot go just anywhere either.</strong> Because the design leans on the internal pull-up, the pin must have one — which rules out D0 (GPIO16), the only ESP8266 pin without. It must also not be a strapping pin: a button to ground on D3 (GPIO0) or D4 (GPIO2) stops a normal boot if it is held at power-on, and D8 (GPIO15) has to be low at boot and carries a board pull-down that an internal pull-up would fight. With D2 (GPIO4) taken by the panel data, that leaves D1, D5, D6 and D7, and D6 is pencilled in for charger STAT. So D1, D5 or D7, freely.</li>
+      <li><strong>The two CC pulldowns are what make the port work at all.</strong> A USB-C source supplies nothing until it sees a pulldown on a CC pin, so R9 and R10 must both be fitted, one per pin rather than one shared between them, because that is how the source detects the cable orientation. Leave them out and a C-to-C cable delivers no power while a legacy A-to-C cable still works, so the port supplies nothing with some cables and works with others. They ask for nothing beyond the default 5 V, which covers the 300 mA the charger draws.</li>
       <li><strong>Put both USB connectors behind the same lid.</strong> Flashing through the NodeMCU socket with the cell connected puts its onboard AMS1117 on the 3.3 V rail alongside U3, and USB and the cell must never drive that rail together. That is the same fault class as charging with the display on, so one lid covering both ports closes both with one mechanism.</li>
-      <li><strong>Check the switch rating against the mechanism.</strong> SW1 carries the 1.5 A worst frame, and slide switches with large actuators are commonly rated 0.3 to 0.5 A — so the neat version, where the switch body itself shrouds the socket, may not have a part that fits. Either let the lid drive a proper 3 A toggle, or put a logic-level P-channel load switch in the positive lead and let the mechanism operate only its gate, which drops the mechanical part to microamps and allows a microswitch or a reed switch and magnet. Both arrangements fail safe: a jam with the lid shut prevents charging, a jam with it open prevents switch-on.</li>
+      <li><strong>Q3 soft-starts the panel supply, and takes the current off SW1.</strong> The 1000 µF would otherwise draw an 84 A peak through the switch contacts on every close, which erodes and welds them — a wear mechanism the protection analysis does not cover, since the surge decays long before the AP9101C could act. C10 ramps the gate over about 9 ms, so the capacitor charges at C·dV/dt ≈ 0.42 A instead, and SW1 is left carrying only the 38 µA of gate current. That means the mechanism can be a microswitch or a reed switch and magnet rather than a 3 A toggle. It still fails safe: a jam with the lid shut prevents charging, a jam with it open prevents switch-on. Turn-off runs through R11 alone and takes 100 ms, which is why R11 is not made larger to improve the gate drive.</li>
+      <li><strong>Q3 is an AON7407, chosen on gate drive rather than on current.</strong> R11 and R12 divide the cell, so V<sub>GS</sub> is about −3.8 V when full and −2.9 V at 3.2 V, and it can never exceed the cell voltage. The AON7407 is specified below 12.5 mΩ at −2.5 V and characterised down to −1.8 V, with a −0.9 V worst-case threshold, so it is fully on across the whole range and costs 19 mV at the 1.5 A worst frame. If you substitute, the clause to search on is R<sub>DS(on)</sub> <em>specified at V<sub>GS</sub> = −2.5 V</em> — the common SOIC-8 parts are standard-level and fail here, an AOD403 or DMP3013SFV would switch off as the cell drained, and a BSS315P is far too small. Size the package for the fault as well: up to 8 A for 10 ms passes through Q3 before the protection acts.</li>
       <li><strong>Measure the AP9101C overcharge threshold before committing the layout.</strong> VCU detects between 4.200 and 4.250 V while the MCP73831-2 regulates between 4.168 and 4.232 V, and those ranges overlap. Ramp a bench supply across VDD and VSS from 4.0 V and watch CO. If the parts in hand detect at 4.240 V or above there is enough margin.</li>
       <li><strong>Keep the LDR where it cannot see the panel.</strong> A photocell facing a 16×16 display is a feedback loop — bright frame, high reading, brightness stays up. Put it on a face pointing away from the front, or recess it in a short tube. This decides whether the feature works, more than the choice of part does.</li>
       <li><strong>R8 shares its node with the NodeMCU's own divider.</strong> The board carries roughly 220 kΩ and 100 kΩ from the A0 header, so about 320 kΩ to ground sits in parallel with R8 — 100 kΩ becomes about 76 kΩ in practice. Measure the board's actual resistors before sizing R8, since NodeMCU variants differ. The LDR is on the top leg for this reason: on the bottom leg that 320 kΩ would swamp the dark end, which is the range night dimming depends on.</li>
@@ -658,7 +728,7 @@
   <section>
     <h2>What this sheet does not decide</h2>
     <p>Pin numbers are shown only for U2 and U3, where they were confirmed against the datasheet and the top marking. For U1 and the MOSFETs, take the numbering from the KiCad symbol and check it against the datasheet when you pick the footprint.</p>
-    <p>Which SW2 position is sprites and which is map is not fixed here — it grounds D1 in one of them and firmware decides the meaning. Because SW2 carries no power, D1 can be polled in the loop rather than read once at boot, so a mode change no longer costs a reboot and a WiFi reassociation the way the earlier three-position toggle did. The charger STAT pin is drawn unconnected, since no firmware runs while charging; the 470 Ω and LED indicator from VBUS to STAT can be added if you want a visible charge light.</p>
+    <p>SW2 is momentary, so it says nothing about the mode at power-on: the display starts in sprites and each press cycles it. Because SW2 carries no power, D1 is polled in the loop rather than read once at boot, so a mode change costs no reboot and no WiFi reassociation. The charger STAT pin is drawn unconnected, since no firmware runs while charging; the 470 Ω and LED indicator from VBUS to STAT can be added if you want a visible charge light.</p>
   </section>
 
 </div>

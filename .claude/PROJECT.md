@@ -8,13 +8,13 @@ See `.claude/<topic>.allium` for the Allium behavioural spec.
 
 ## Behaviour
 
-A mechanical switch with three positions selects what the display does.
+Two separate controls: a power switch and a mode button.
 
-- **Off** removes power from the whole device, rather than showing a black frame.  This is the only way to stop the panels drawing, because 256 always-running controllers take about 224 mA whatever is displayed
+- **Off** is the power switch open, which removes power from the whole device rather than showing a black frame.  This is the only way to stop the panels drawing, because 256 always-running controllers take about 224 mA whatever is displayed.  The switch is coupled to the charging-port lid, so it is open whenever the lid is open
 - **Sprites** cycles through retro game sprites, which is what the sketches in `dev/` already draw
 - **Map** fetches data from a backend API over plain HTTP and plots it on a fixed spatial map.  The map is mostly unlit, with around ten pixels lit at once
 
-The switch passes cell current on one pole and gives the MCU a single input on the other, saying which of the two live modes it is in.  Off needs no input, because there is no power to read it with.
+The mode button is momentary, on D1 to ground, debounced by a 100 nF capacitor and held high by the pin's internal pull-up.  Each press cycles between the two live modes.  Because the button holds no position, the display starts in sprite mode every time the power switch closes.
 
 ## Technology
 
@@ -40,3 +40,7 @@ Sketch source is `dev/rgb-matrix`, build output is `dev/build`, and the Arduino 
 - Numeric variables have unit suffixes (`delay_ns`) or count prefix (`n_members`)
 - Function arguments should never be booleans, use Enums instead
 - Serial output ends lines with `\r\n`, which is what Arduino `println` sends
+
+## Workflow
+
+- KiCad files are edited by the user only.  Claude never writes `power-board/*.kicad_sch`, `*.kicad_pcb`, `*.kicad_pro` or `*.kicad_sym`, and reports what needs changing instead

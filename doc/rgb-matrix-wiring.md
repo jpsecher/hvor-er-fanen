@@ -100,7 +100,7 @@ Assumes 2700 mAh usable down to a 3.6 V cutoff, the 224 mA panel idle floor from
 
 The bottom row is unreachable once the brightness cap under [protection](#protection) is in place, which holds the worst frame to about 1.5 A.  It is kept because it is what the panel would draw without one.  The row above it stays reachable, at 1030 mA against a 1500 mA cap.
 
-**The idle floor dominates every realistic mode**, and it cannot be reduced in software, because FastLED only scales the lit pixels.  A blank frame still empties the cell in about half a day.  That is why the switch removes power in its off position rather than displaying black.
+**The idle floor dominates every realistic mode**, and it cannot be reduced in software, because FastLED only scales the lit pixels.  A blank frame still empties the cell in about half a day.  That is why the power switch removes power rather than the firmware displaying black.
 
 ### Powering the ESP8266
 
@@ -126,7 +126,7 @@ Fit at least **10 µF from OUT to ground**, which the datasheet requires for sta
 
 Reduce the transmit power with `WiFi.setOutputPower`.  The radio defaults to 20.5 dBm, and a display talking to an access point in the same room does not need it; running 802.11n nearer 14 dBm cuts the peak substantially.
 
-SOT-89-3 has only input, output and ground, so there is no way to shut the regulator down from firmware.  If the ESP should ever be switched off rather than slept, it needs its own load switch, because the mode switch cuts the whole device rather than either half of it.
+SOT-89-3 has only input, output and ground, so there is no way to shut the regulator down from firmware.  If the ESP should ever be switched off rather than slept, it needs its own load switch, because the power switch cuts the whole device rather than either half of it.  A small P-channel part such as the BSS315P suits that job, dropping 19 mV at the ESP's 70 mA.
 
 ### WiFi
 
@@ -158,6 +158,10 @@ Use **3.3 kΩ, for about 300 mA**.  The full 500 mA is not useful here: from a 5
 
 Fit 4.7 µF at the input and at VBAT, and 470 Ω in series with an LED on STAT if a charge indicator is wanted.
 
+**The input is a power-only USB-C receptacle**, the 6-pin kind carrying VBUS, GND, CC1 and CC2 and nothing else.  It has no D+, no D− and no SBU, so it cannot flash the board even by accident, which is what keeps it separate from the NodeMCU socket.
+
+**Fit 5.1 kΩ from CC1 to ground and a second 5.1 kΩ from CC2 to ground.**  A USB-C source supplies nothing until it sees a pulldown on a CC pin, and the two resistors must be separate rather than one shared between the pins, because that is how the source detects the cable orientation.  Leave them out and a C-to-C cable delivers no power at all while a legacy A-to-C cable still works, so the port supplies nothing with some cables and works with others.  The pulldowns ask for nothing beyond the default 5 V, which is more than the 300 mA the charger draws.
+
 **The display must be off while charging.**  This charger has five pins — VDD, VSS, VBAT, STAT and PROG — so there is no system output and the load necessarily sits on the cell terminals.
 
 **Charge termination is 7.5% of the programmed current, which is 22.5 mA at 300 mA.**  A blank display already draws 244 to 294 mA and a sprite 420 to 470 mA from the same node, so the current never falls to the termination threshold and the charge cycle never completes.  At sprite brightness the load exceeds the charge current outright and the cell discharges while nominally charging.
@@ -166,7 +170,7 @@ Fit 4.7 µF at the input and at VBAT, and 470 Ω in series with an LED on STAT i
 
 Removing it still leaves the ESP8266, and that is not far enough under the threshold to help.  The regulator is linear, so its cell current equals its load current: about 20 mA with the radio off, against a termination threshold of 22.5 mA.  Two milliamps is not a margin, and receiving at 56 to 70 mA is over the threshold outright.
 
-**So the charge cycle completes only with the mode switch in its off position**, which already removes power from everything.  That is the arrangement this build uses, and it also means no firmware is running while charging, so nothing can read STAT and nothing can blank anything.  **The STAT pin and the PROG shutdown are only useful in a design where the device runs while plugged in**, which needs a charger with a power path, such as the BQ24074 under [alternatives](#alternatives).
+**So the charge cycle completes only with the power switch open**, which already removes power from everything, and the lid interlock is what guarantees it.  That is the arrangement this build uses, and it also means no firmware is running while charging, so nothing can read STAT and nothing can blank anything.  **The STAT pin and the PROG shutdown are only useful in a design where the device runs while plugged in**, which needs a charger with a power path, such as the BQ24074 under [alternatives](#alternatives).
 
 Two ways to keep the ESP running while charging were considered and rejected:
 
@@ -198,7 +202,7 @@ The suffixes matter as much as they do on the charger:
 | Charge overcurrent | VCOC | -0.060 V | 10 ms |
 | Overvoltage charger | VOVCHG | 8.0 V | none |
 
-Current consumption is 3 µA while running, against a panel idle floor of 224 mA.  Over a month with the switch off it costs about 2 mAh out of 3000.
+Current consumption is 3 µA while running, against a panel idle floor of 224 mA.  Over a month with the power switch open it costs about 2 mAh out of 3000.
 
 #### The MOSFETs set the trip current
 
@@ -294,9 +298,63 @@ Cutting off at 3.200 V is well below the roughly 3.5 V where the panels lose blu
 
 #### Inrush
 
-The 1000 µF at the panel input draws a large inrush when the mode switch closes, and it passes through the protection MOSFETs.  This was checked because a trip here would be hard to clear: the datasheet says a discharge overcurrent or short-circuit trip holds until the load is disconnected, which with a permanently wired panel means opening the mode switch.
+The 1000 µF at the panel input draws a large inrush when the power switch closes, and it passes through the protection MOSFETs.  This was checked because a trip here would be hard to clear: the datasheet says a discharge overcurrent or short-circuit trip holds until the load is disconnected, which with a permanently wired panel means opening the power switch.
 
 Through roughly 50 mΩ of cell resistance and MOSFETs, the peak is near 84 A with a 50 µs time constant.  It falls below the short-circuit threshold in about 48 µs against a minimum detection delay of 192 µs, and below the overcurrent threshold well inside the 6 ms minimum.  So it does not latch on power-on.  Watch for it at bring-up regardless, because the margin on the short-circuit path is the narrower of the two.
+
+#### Soft-starting the panel supply
+
+The inrush does not trip the protection, but **84 A of make-current crosses the power switch contacts on every close**, which erodes them and can weld them.  That is a wear mechanism rather than a fault, so the analysis above does not cover it, and it is the same 84 A that forces the fuse requirement under [protection](#protection).
+
+**A series resistor cannot fix it.**  The peak is set by total series resistance, so limiting it means adding ohms to the path the panel's 1.5 A also takes.
+
+| Added resistance | Inrush peak | Drop at 1.5 A | Dissipation |
+| --- | --- | --- | --- |
+| 50 mΩ | 42 A | 75 mV | 113 mW |
+| 370 mΩ | 10 A | 555 mV | 830 mW |
+| 1 Ω | 4 A | 1.5 V | 2.25 W |
+
+The whole usable window is about 700 mV, from a full cell to the roughly 3.5 V where the panels lose blue and green, so any resistor large enough to matter takes a large part of it, and takes it at full brightness.  Putting the resistor in series with the capacitor instead does not work either: that capacitor is a bulk reservoir for pixel-change current steps, and adding ESR is exactly what stops it doing that.
+
+**An NTC inrush limiter is worse.**  It limits only while cold, reaching its low resistance by self-heating, so a lid opened and closed again a few seconds later meets a thermistor that is still hot and gets no limiting at all.  On a lid-switched device that is the normal pattern.  Its resistance also depends on the load, and this one sits at 224 mA for most of its life, far below any inrush limiter's rated current, so it would never reach its low value: hot at 1.5 A a small part is around 0.5 Ω, which is 750 mV, and barely warm at idle it is several ohms.  The rail would then wander with the picture on a thermal time constant of seconds, which is the rail the DIN threshold is measured against.
+
+**Use a P-channel load switch with a gate ramp.**  Q3 sits in the positive lead with its source at P+ and its drain at VSW, R11 holds the gate at the source so the FET is off, and the power switch pulls the gate down through R12 while C10 slows it.  The limiting comes from the gate ramp rather than from resistance, so it costs only the FET's on-resistance in steady state.
+
+- **R11 100 kΩ, R12 10 kΩ, C10 1 µF** give a turn-on time constant of C10 × (R11 ‖ R12) = 9.1 ms
+- **The charging current becomes C · dV/dt**, which is 1000 µF × 4.2 V / 10 ms ≈ **0.42 A**, and stays under an ampere even if the drain transition takes only half the gate ramp
+- **Each switch-on then costs a few thousandths of an A²s** rather than 0.18, so the fuse no longer has to be sized around repeated inrush
+- **The power switch carries gate current only**, about 38 µA, and with it open no current flows in the divider at all
+- **Turn-off takes R11 × C10 = 100 ms**, because C10 recharges through R11 alone.  That is what limits how large R11 may be: 1 MΩ would improve the gate drive slightly but leave the FET in its linear region for a second.  100 ms costs nothing, since turn-off has no inrush and the transition dissipates tens of millijoules
+- The body diode conducts drain to source, which is the reverse of the load direction, so it blocks correctly when the FET is off
+
+These are design targets to confirm at bring-up rather than guarantees, because the current profile depends on the transfer characteristic of the part fitted.
+
+**The gate drive is what constrains the choice.**  The divider gives 0.909 of the cell, so V_GS is about −3.8 V from a full cell and **−2.9 V at 3.2 V**, and it can never exceed the cell voltage.  The part must therefore have its **R_DS(on) specified at V_GS = −2.5 V**, which is the clause to search on: a datasheet that characterises down there is one built for this kind of drive.  Current is the easy part, though the package still has to take a fault, up to the trip band of 2.8 to 8 A for 10 ms.
+
+**The part fitted is an AON7407**: 20 V, R_DS(on) below 12.5 mΩ at V_GS = −2.5 V, and characterised down to −1.8 V.  The datasheet is [AON7407-DTE.pdf](./AON7407-DTE.pdf).  Its gate threshold is −0.9 V at worst against −0.3 V typical, so it is fully on across the whole cell range, and it carries −40 A at a 25 °C case with a −100 A pulsed rating.
+
+| Quantity | Value |
+| --- | --- |
+| drop at the 1.5 A worst frame | 19 mV, against 24 mV for the two protection MOSFETs |
+| dissipation at 1.5 A | 28 mW |
+| a 8 A trip for 10 ms | 0.8 W |
+| 40 A for 320 µs on the short-circuit path | 6.4 mJ |
+| V_GS maximum | ±8 V, against a gate that never exceeds 4.2 V |
+
+The 1 µF of C10 swamps the part's 4.2 nF input capacitance by 250 times, so the ramp stays set by C10 rather than by the transistor.
+
+**It is a DFN 3×3 with an exposed pad, so it needs reflow.**  An iron cannot reach the pad underneath: this one wants solder paste and hot air or a hotplate.  That is worth knowing before the board is populated, because every other part on it can be done by hand.
+
+Four parts were rejected, and together they show why the search clause matters rather than being four separate accidents:
+
+| Part | Why not |
+| --- | --- |
+| BSS315P | right gate class, V_GS(th) −2 V maximum and specified at −4.5 V, but far too small: 270 mΩ gives 405 mV and 608 mW at 1.5 A against a 500 mW package |
+| AOD403 | far more capable than needed at 8 mΩ and 70 A, but V_GS(th) is −3.5 V at worst and it is specified only at −10 V and −20 V, so a worst-case device would switch off as the cell drained |
+| AO4407A | specified at −20, −10 and −6 V only.  The common SOIC-8 parts are all standard-level like this |
+| DMP3013SFV | V_GS(th) −2.5 V maximum with nothing characterised below −4.5 V, so it repeats the AOD403's fault with less margin |
+
+The pattern is that parts characterised at −2.5 V are nearly all power DFNs, because that specification point exists for battery-side load switches, which are always reflowed.  A hand-solderable package and this gate drive do not currently go together.
 
 #### What it does not cover
 
@@ -309,13 +367,21 @@ Pins, with D0, D3, D4 and D8 excluded for the reasons under [the data line](#the
 | Signal | Pin | Notes |
 | --- | --- | --- |
 | Panel data | D2 (GPIO4) | through the 470 Ω resistor |
-| Mode select | D1 (GPIO5) | the switch's signal pole, with a pull-up |
+| Mode select | D1 (GPIO5) | the mode button, held high by the internal pull-up.  D5 or D7 would serve equally |
 | Ambient light | A0 | the only analog input, so nothing else may claim it |
 | Spare | D5, D6, D7 | D6 is reserved for charger STAT, which only a power-path charger would need |
 
-**The mode switch carries the cell current.**  It is a 2-pole 3-position ON-OFF-ON toggle: the outer positions of the power pole are commoned so both live modes pass current and the centre breaks it, and the signal pole grounds D1 in one of them.  A **3 A part** is enough, because the brightness cap under [protection](#protection) holds the worst frame the firmware can produce to about 1.5 A.  Without the cap it would need to be a 6 A part, to cover a full white panel at 4.5 A.
+**The power switch carries no cell current.**  It is a single-pole switch coupled to the charging-port lid, and it drives the gate of Q3 rather than the load, so it carries about **38 µA**.  Its rating is therefore not a constraint, and a microswitch or a reed switch and magnet will do.  Q3 carries the current instead, under [soft-starting the panel supply](#soft-starting-the-panel-supply).
 
-The switch sits in the positive lead and the protection in the negative, so a fault passes through the switch before the protection can act on it — up to the trip band of 2.8 to 8 A for 10 ms, or tens of amps for 320 µs on the short-circuit path.  A toggle carries that briefly without harm, so the 3 A rating is a continuous rating rather than a fault rating.
+Q3 sits in the positive lead and the protection in the negative, so a fault passes through Q3 before the protection can act on it — up to the trip band of 2.8 to 8 A for 10 ms, or tens of amps for 320 µs on the short-circuit path.  Size it for that pulse rather than only for the 1.5 A worst frame, which is why the requirement asks for 5 A and a package larger than SOT-23.
+
+**The mode button carries no power at all.**  It is a momentary push button from D1 to ground, so the only current in it is the pull-up current.  Each press cycles the display between sprites and map.  Because the button holds no position, it says nothing about the mode at power-on, so the display starts in sprite mode every time the power switch closes.
+
+**A 100 nF capacitor across the button debounces it**, so no firmware debounce is needed: the pull-up and the capacitor form an RC, the ESP8266 input is a Schmitt trigger, and firmware reads a level and acts on the falling edge.  The pull-up sets the time constant.
+
+**There is no pull-up resistor on the board.**  `pinMode(D1, INPUT_PULLUP)` provides it, at roughly 45 kΩ with a spread of 30 to 100 kΩ, which against 100 nF gives a time constant of **3 to 10 ms**.  Tactile switch bounce is commonly 1 to 5 ms, so that has margin, and the release edge slowing to a few milliseconds is imperceptible.  The internal pull-up only exists once `pinMode` has run, so the pin floats through boot, which is harmless on a pin that is not a strapping pin.
+
+**The button is not tied to D1, but the choice is not free either**, because the design depends on the pin providing its own pull-up.  That rules out D0 (GPIO16), the only ESP8266 pin without one.  It also has to avoid the strapping pins: a button to ground on D3 (GPIO0) or D4 (GPIO2) stops a normal boot if it is held down at power-on, and D8 (GPIO15) must be low at boot and carries a board pull-down that an internal pull-up would fight.  With D2 (GPIO4) taken by the panel data, that leaves D1, D5, D6 and D7, and D6 is reserved for charger STAT.  So **D1, D5 or D7**.
 
 **Star ground at P−.**  The panel and the ESP must return to the protection circuit's P− node separately rather than sharing a trace.  Panel current swings by more than an ampere as pixels change, and if the ESP sits downstream of that, its ground reference moves with the display — and the DIN threshold is measured against exactly that reference.  Getting this wrong builds a board that works on the bench and glitches whenever the picture is busy.
 
@@ -323,7 +389,7 @@ The protection MOSFETs sit between P− and the cell's negative terminal, so P�
 
 **The two protection MOSFETs share one copper pour.**  The TO-263 tab is the drain, and both drains are the same node here, so the tabs need no isolation between them.  Dissipation is 16 mΩ at 1.5 A, which is 36 mW across two packages, so the pour is for soldering rather than for cooling.
 
-Pour thick copper for the cell to panel path on both sides: the cell positive through the mode switch to the panel, and the panel ground through P− and the protection MOSFETs to the cell negative.  The regulator branch is a few hundred milliamps and needs nothing special.  The 1000 µF electrolytic goes at the panel input, and the 470 Ω resistor stays in series with DIN, close to the panel.
+Pour thick copper for the cell to panel path on both sides: the cell positive through the power switch to the panel, and the panel ground through P− and the protection MOSFETs to the cell negative.  The regulator branch is a few hundred milliamps and needs nothing special.  The 1000 µF electrolytic goes at the panel input, and the 470 Ω resistor stays in series with DIN, close to the panel.
 
 Lay out a SOT-89-3 footprint for the regulator, and place the 1000 µF rail capacitor beside the ESP even if it is left unpopulated while the radio is off.  Enabling WiFi later then costs one component rather than a new board.
 
@@ -336,6 +402,8 @@ Lay out a SOT-89-3 footprint for the regulator, and place the 1000 µF rail capa
 | HT7833 | SOT89 | — | GND | VIN | VOUT |
 
 The part in hand is marked **H9**, so it is the YR variant and the footprint is GND, IN, OUT.  The HT7833 has the same order, so it drops into that footprint without change.  A part marked CS does not.
+
+**The regulator tab is at cell voltage, not at ground.**  Pin 2 is the lead bonded to the SOT-89 tab, and the YR carries IN on pin 2, so the tab must be kept off the ground pour.  The Y variant would have put ground there instead.
 
 ## Frame rate
 
@@ -363,10 +431,16 @@ A single chain of 256 runs at about 130 fps, which is far more than the display 
 - AP130-33YR low-dropout regulator for the ESP8266, in SOT-89-3, marked H9
 - 10 µF at the regulator output, required for stability, and 1 µF at its input
 - 1000 µF on the 3.3 V rail, beside the ESP8266
-- 2-pole 3-position ON-OFF-ON toggle, off in the centre, rated 3 A continuous
+- single-pole power switch coupled to the charging-port lid, carrying only Q3's gate current
+- AON7407 P-channel load switch for the panel supply, in DFN 3×3, which needs reflow rather than an iron
+- 100 kΩ from the Q3 gate to its source, 10 kΩ from the gate to the power switch, and 1 µF from gate to source
+- momentary push button for mode, needing no pull-up resistor because the internal one serves
+- 100 nF across the mode button, debouncing it in hardware
 - MCP73831T-2ACI/OT charge controller, in SOT-23-5, marked KD
 - 3.3 kΩ from PROG to ground, setting the charge current to about 300 mA
 - 4.7 µF at the charger input and at VBAT
+- power-only USB-C receptacle, the 6-pin kind with VBUS, GND, CC1 and CC2 only
+- two 5.1 kΩ resistors, one from each CC pin to ground
 - 470 Ω and an LED on STAT, if a charge indicator is wanted
 
 ## Bring-up order
@@ -380,7 +454,7 @@ Work up in steps, so a failure points at one thing.  The sketch in `dev/rgb-matr
 5. Light a few pixels white, and watch for the board resetting
 6. Enable WiFi last, and watch for resets again
 
-Step 1 comes first because everything else runs through it.  A dead board here is more likely the protection than the wiring: watch particularly for it cutting out the moment the panels are switched on, which would be the inrush latching the short-circuit detection, and which clears only by opening the mode switch.  The analysis under [inrush](#inrush) says it should not happen, and this is where that gets tested.
+Step 1 comes first because everything else runs through it.  A dead board here is more likely the protection than the wiring: watch particularly for it cutting out the moment the panels are switched on, which would be the inrush latching the short-circuit detection, and which clears only by opening the power switch.  The analysis under [inrush](#inrush) says it should not happen, and this is where that gets tested.
 
 The colour order matters for reading the result.  If the red pass looks right and the green or blue pass is dim or missing, the supply is too low for those dies and the data line is fine.  If pixels light in the wrong colour or at random positions in every pass, the problem is the data line rather than the supply.
 
@@ -427,7 +501,7 @@ To confirm the idle floor directly rather than by inference, run `dev/current-te
 
 Planned but not built.  Both affect the board layout, so leave room for them.
 
-**Charge from USB.**  The part is chosen and specified under [charging](#charging).  Two things remain.  The connector: decide whether the NodeMCU USB socket is used only for flashing or whether a separate charging input is fitted, and keep them separate if possible, because the rule that USB and the battery must never drive the 3.3 V rail together is easier to keep when the charging port is not the flashing port.  And the operating rule: the mode switch has to be off while charging, for the reason given in that section, which needs no firmware at all.
+**Charge from USB.**  The part and the connector are both chosen and specified under [charging](#charging).  What remains is the operating rule: the power switch has to be open while charging, for the reason given in that section, which needs no firmware at all.
 
 **Ambient light sensor for night dimming.**  In map mode this is a comfort feature rather than a power saving: ten lit pixels contribute 30 to 80 mA against a 224 mA floor, so dimming them recovers perhaps 20 to 40 mA out of 300 and the [runtime table](#runtime) barely moves.  The power argument only holds in sprite mode, where far more of the panel is lit — brightness 128 across the whole panel is 2.6 h against 5.7 to 6.4 h for a sprite at brightness 32.  `FastLED.setBrightness` sets it, and because the sinks are constant-current, brightness scales current close to linearly.
 
@@ -445,6 +519,8 @@ Start with the LDR on A0.  Nothing here needs true lux, and it leaves every GPIO
 **External 5 V supply.**  Feeds the panels directly while the NodeMCU shares only ground, with no limit on brightness.  Four panels all white is about 4.5 A, so it needs a 6 A supply, and it ties the display to a wall socket.
 
 **Level shifting for a 5 V panel.**  A 74AHCT125 converts the 3.3 V data to a clean 5 V signal and keeps the panel inside its characterised range.  A 3 A silicon rectifier such as a 1N5401 in series with the panel supply is the cheaper answer, dropping about 0.7 V to put the panel near 4.3 V and the threshold near 3.0 V.  A Schottky is not a substitute, because its smaller drop leaves the threshold marginal again.  Neither is needed when the panel runs from a cell.
+
+**A dedicated load-switch IC.**  Replaces Q3, R11, R12 and C10 with one part, and the common ones have a controlled slew rate built in and work from well under 2.5 V of control, which removes the gate-drive problem entirely.  The ceiling is the reason it is not the first choice: most are rated 2 to 3 A, which sits close to the 1.5 A worst frame with less margin than a discrete FET gives.
 
 **A boost converter to 5 V.**  Would keep the panel working down to the protection's 3.2 V cutoff rather than giving up near 3.6 V, but costs roughly 40% of the runtime, because the panel draws the same current at 5 V as at 3.7 V and the converter adds losses on top.
 
