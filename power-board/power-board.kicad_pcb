@@ -116,9 +116,9 @@
 			(subtractmaskfromsilk no)
 			(outputformat 1)
 			(mirror no)
-			(drillshape 1)
+			(drillshape 0)
 			(scaleselection 1)
-			(outputdirectory "")
+			(outputdirectory "output")
 		)
 	)
 	(footprint "Resistor_SMD:R_0805_2012Metric_Pad1.20x1.40mm_HandSolder"
@@ -14033,25 +14033,25 @@
 		(layer "Edge.Cuts")
 		(uuid "0f20b2a8-e76d-4604-bae9-32c5f0afce75")
 	)
-	(gr_text "RGB matrix\nwifi\n18650 cell"
-		(at 115.25 141.5 0)
-		(layer "F.SilkS")
-		(uuid "5ca1ecb7-f4a5-40f7-8ff5-6bfd9665fe06")
-		(effects
-			(font
-				(size 1 1)
-				(thickness 0.15)
-			)
-			(justify left bottom)
-		)
-	)
 	(gr_text "kaleidoscope\njpsecher\n2026\nv1"
-		(at 138 122.75 0)
+		(at 118.25 142.25 0)
 		(layer "F.SilkS")
 		(uuid "75439366-9cb8-4e48-a0da-270d7f3d9ac9")
 		(effects
 			(font
 				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify bottom)
+		)
+	)
+	(gr_text "RGB matrix\nwifi\n18650 cell"
+		(at 129.75 119.75 0)
+		(layer "F.SilkS")
+		(uuid "5ca1ecb7-f4a5-40f7-8ff5-6bfd9665fe06")
+		(effects
+			(font
+				(size 2 2)
 				(thickness 0.15)
 			)
 			(justify bottom)
