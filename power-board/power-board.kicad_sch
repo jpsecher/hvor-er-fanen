@@ -6531,7 +6531,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x02"
+		(property "Value" "+ -"
 			(at 58.42 208.2801 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10227,7 +10227,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x02"
+		(property "Value" "+ -"
 			(at 58.42 222.2501 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -10950,7 +10950,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "Conn_01x02"
+		(property "Value" "- +"
 			(at 58.42 195.5801 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -12383,8 +12383,8 @@
 				)
 			)
 		)
-		(property "Value" "Conn_01x03"
-			(at 52.578 181.356 0)
+		(property "Value" "- In +"
+			(at 56.134 180.848 0)
 			(show_name no)
 			(do_not_autoplace no)
 			(effects
